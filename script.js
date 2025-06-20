@@ -140,7 +140,6 @@ async function FetchGalleryFiles () {
 
         const frame = document.createElement("div");
         frame.className = "block";
-        frame.style.width = calc("100% / 2 - 48px");
         frame.style.aspectRatio = "1 / 1";
         frame.style.backgroundColor = "#f3f3f3";
         frame.style.border = "1px solid rgba(197,197,197,.24)";
