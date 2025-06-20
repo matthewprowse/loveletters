@@ -142,7 +142,7 @@ async function FetchGalleryFiles() {
   const { data, error } = await supa
     .from("file")
     .select("path,type,group(id,date,location)")
-    .order("group.date", { ascending: false })
+    .order("date", { foreignTable: "group", ascending: false })
     .range(current_page * items_per_page, (current_page + 1) * items_per_page - 1);
 
   if (error || !data?.length) { 
