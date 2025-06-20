@@ -3,6 +3,47 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 const supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+const date_cache = new Map();
+const format_cached = (s) => {
+  if (!date_cache.has(s)) {
+    date_cache.set(s, new Date(s).toLocaleDateString("en-ZA", 
+      { weekday:"long", day:"numeric", month:"long", year:"numeric" }));
+  }
+  return date_cache.get(s);
+};
+
+let gallery_observer = null;
+let current_page = 0;
+const items_per_page = 20;
+let loading_more = false;
+let image_cache = new Map();
+
+const debounce = (func, wait) => {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+};
+
+const preload_image = (src) => {
+  if (image_cache.has(src)) return image_cache.get(src);
+  
+  const img = new Image();
+  const promise = new Promise((resolve, reject) => {
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+  });
+  
+  img.src = src;
+  image_cache.set(src, promise);
+  return promise;
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   InitTabs();
   FetchTodayNote();
@@ -83,13 +124,32 @@ async function FetchHistoryNotes() {
 }
 
 async function FetchGalleryFiles() {
+  if (loading_more) return;
+  
   const page = document.querySelector("#gallery");
+  
+  if (current_page === 0) {
+    page.innerHTML = "";
+    if (gallery_observer) {
+      gallery_observer.disconnect();
+      gallery_observer = null;
+    }
+    image_cache.clear();
+  }
+
+  loading_more = true;
 
   const { data, error } = await supa
     .from("file")
-    .select("path,type,group(id,date,location)");
+    .select("path,type,group(id,date,location)")
+    .order("group.date", { ascending: false })
+    .range(current_page * items_per_page, (current_page + 1) * items_per_page - 1);
 
-  if (error || !data?.length) { console.error("file fetch", error); return; }
+  if (error || !data?.length) { 
+    if (current_page === 0) console.error("file fetch", error); 
+    loading_more = false;
+    return; 
+  }
 
   const grouped = {};
   data.forEach(f => {
@@ -98,7 +158,7 @@ async function FetchGalleryFiles() {
   });
 
   const groups = Object.entries(grouped)
-    .sort(([a],[b]) => new Date(a.split("||")[0]) - new Date(b.split("||")[0]));
+    .sort(([a],[b]) => new Date(b.split("||")[0]) - new Date(a.split("||")[0]));
 
   const fragment = document.createDocumentFragment();
   const lazy_blocks = [];
@@ -120,94 +180,119 @@ async function FetchGalleryFiles() {
     return frame;
   };
 
-  const create_save_button = (file_path) => {
-    const save_btn = document.createElement("div");
-    save_btn.className = "chip-large";
-    save_btn.textContent = "Save";
-    save_btn.style.cursor = "pointer";
-    save_btn.onclick = () => DownloadFile(file_path);
-    return save_btn;
-  };
-
-  groups.forEach(([key, files], idx) => {
-    const [date, loc] = key.split("||");
-    const file_paths = files.map(f => `"${f.path}"`).join(",");
-
-    const wrap = document.createElement("div");
-    wrap.className = "column-gap-16";
-    
-    wrap.innerHTML = `
-      <div class="row-space-between">
-        <p class="medium-secondary">${Format(date)}</p>
-        <div class="chip-large" style="cursor:pointer" onclick="BatchDownload([${file_paths}])">Save All</div>
-      </div>
-      <div class="row">
-        <div class="chip-small">${files[0]?.group.id ?? ""}</div>
-        <div class="dot"></div>
-        <p class="medium">${loc}</p>
-      </div>
-    `;
-
-    const files_container = document.createElement("div");
-    files_container.innerHTML = files.reduce((html, file_data, i) => {
-      if (i % 2 === 0) {
-        const next_file = files[i + 1];
-        const row_html = `
-          <div class="row" style="gap:12px">
+  const generate_files_html = (files) => {
+    const rows = [];
+    for (let i = 0; i < files.length; i += 2) {
+      const file_data = files[i];
+      const next_file = files[i + 1];
+      
+      rows.push(`
+        <div class="row" style="gap:12px">
+          <div class="column-gap-8" style="flex:1">
+            <div class="file-frame-placeholder" data-index="${i}"></div>
+            <div class="row-flex-end">
+              <div class="chip-large" style="cursor:pointer" onclick="DownloadFile('${file_data.path}')">Save</div>
+            </div>
+          </div>
+          ${next_file ? `
             <div class="column-gap-8" style="flex:1">
-              <div class="file-frame-placeholder"></div>
+              <div class="file-frame-placeholder" data-index="${i + 1}"></div>
               <div class="row-flex-end">
-                <div class="chip-large" style="cursor:pointer" onclick="DownloadFile('${file_data.path}')">Save</div>
+                <div class="chip-large" style="cursor:pointer" onclick="DownloadFile('${next_file.path}')">Save</div>
               </div>
             </div>
-            ${next_file ? `
-              <div class="column-gap-8" style="flex:1">
-                <div class="file-frame-placeholder"></div>
-                <div class="row-flex-end">
-                  <div class="chip-large" style="cursor:pointer" onclick="DownloadFile('${next_file.path}')">Save</div>
-                </div>
-              </div>
-            ` : ''}
-          </div>
-        `;
-        return html + row_html;
-      }
-      return html;
-    }, "");
+          ` : ''}
+        </div>
+      `);
+    }
+    return rows.join('');
+  };
 
-    const frame_placeholders = files_container.querySelectorAll(".file-frame-placeholder");
-    files.forEach((file_data, i) => {
-      if (frame_placeholders[i]) {
-        frame_placeholders[i].replaceWith(create_file_frame(file_data));
+  const batch_create_elements = () => {
+    groups.forEach(([key, files], idx) => {
+      const [date, loc] = key.split("||");
+      const file_paths = files.map(f => `"${f.path}"`).join(",");
+
+      const wrap = document.createElement("div");
+      wrap.className = "column-gap-16";
+      
+      wrap.innerHTML = `
+        <div class="row-space-between">
+          <p class="medium-secondary">${format_cached(date)}</p>
+          <div class="chip-large" style="cursor:pointer" onclick="BatchDownload([${file_paths}])">Save All</div>
+        </div>
+        <div class="row">
+          <div class="chip-small">${files[0]?.group.id ?? ""}</div>
+          <div class="dot"></div>
+          <p class="medium">${loc}</p>
+        </div>
+        <div class="files-container">${generate_files_html(files)}</div>
+      `;
+
+      const frame_placeholders = wrap.querySelectorAll(".file-frame-placeholder");
+      frame_placeholders.forEach((placeholder, i) => {
+        const file_data = files[parseInt(placeholder.dataset.index)];
+        if (file_data) {
+          placeholder.replaceWith(create_file_frame(file_data));
+        }
+      });
+
+      fragment.appendChild(wrap);
+
+      if (idx !== groups.length - 1) {
+        const separator = document.createElement("div");
+        separator.className = "row-center";
+        separator.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+        fragment.appendChild(separator);
       }
     });
+  };
 
-    wrap.appendChild(files_container);
-    fragment.appendChild(wrap);
-
-    if (idx !== groups.length - 1) {
-      const separator = document.createElement("div");
-      separator.className = "row-center";
-      separator.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
-      fragment.appendChild(separator);
-    }
-  });
-
-  page.innerHTML = "";
+  batch_create_elements();
   page.appendChild(fragment);
 
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const el = entry.target;
-        el.style.backgroundImage = `url("${el.dataset.src}")`;
-        io.unobserve(el);
-      }
+  if (!gallery_observer) {
+    gallery_observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          if (el.dataset.src) {
+            const src = el.dataset.src;
+            el.removeAttribute('data-src');
+            
+            preload_image(src).then(() => {
+              el.style.backgroundImage = `url("${src}")`;
+            }).catch(() => {
+              el.style.backgroundImage = `url("${src}")`;
+            });
+            
+            gallery_observer.unobserve(el);
+          }
+        }
+      });
+    }, { 
+      rootMargin: "200px 0px",
+      threshold: 0.1
     });
-  }, { rootMargin: "200px 0px" });
+  }
 
-  lazy_blocks.forEach(el => io.observe(el));
+  lazy_blocks.forEach(el => gallery_observer.observe(el));
+
+  if (data.length === items_per_page) {
+    const load_more = document.createElement("div");
+    load_more.className = "row-center";
+    load_more.style.padding = "20px";
+    load_more.innerHTML = '<div class="chip-large" style="cursor:pointer" onclick="LoadMoreGallery()">Load More</div>';
+    page.appendChild(load_more);
+  }
+
+  loading_more = false;
 }
+
+const LoadMoreGallery = debounce(() => {
+  current_page++;
+  FetchGalleryFiles();
+}, 100);
 
 async function DownloadFile(url) {
   const file_name = url.split("/").pop().split("?")[0];
@@ -235,8 +320,7 @@ function SetNote(n,d,h,b){
   note_body.innerHTML = b.replace(/\n/g, "<br>");
 }
 function Format(s){
-  return new Date(s).toLocaleDateString("en-ZA",
-    { weekday:"long", day:"numeric", month:"long", year:"numeric" });
+  return format_cached(s);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
