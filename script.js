@@ -150,7 +150,7 @@ async function FetchGalleryFiles () {
         col.append(frame);
 
         if (f.type === "image") {
-          frame.dataset.src = `${f.path}?width=700&quality=70`;
+          frame.dataset.src = `${f.path}?quality=70`;
           lazyBlocks.push(frame);
         } else {
           frame.style.display = "flex";
