@@ -150,7 +150,7 @@ async function FetchGalleryFiles () {
         col.append(frame);
 
         if (f.type === "image") {
-          frame.dataset.src = `${f.path}?quality=50`;
+          frame.dataset.src = `${f.path}?width=600&quality=50`;
           lazyBlocks.push(frame);
         } else {
           const label = document.createElement("div");
