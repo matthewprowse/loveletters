@@ -89,7 +89,10 @@ async function FetchGalleryFiles () {
     .from("file")
     .select("path,type,group(id,date,location)");
 
-  if (error || !data?.length) { console.error("file fetch", error); return; }
+  if (error || !data?.length) {
+    console.error("file fetch", error);
+    return;
+  }
 
   const grouped = {};
   data.forEach(f => {
@@ -137,16 +140,14 @@ async function FetchGalleryFiles () {
 
         const frame = document.createElement("div");
         frame.className = "block";
-        frame.style.border  = "1px solid rgba(197,197,197,.24)";
-        frame.style.cursor  = "pointer";
-        frame.style.width   = "100%";
+        frame.style.width = "100%";
         frame.style.aspectRatio = "1 / 1";
-        frame.style.backgroundSize     = "cover";
+        frame.style.backgroundColor = "#f3f3f3";
+        frame.style.border = "1px solid rgba(197,197,197,.24)";
+        frame.style.backgroundSize = "cover";
         frame.style.backgroundPosition = "center";
-        frame.style.backgroundRepeat   = "no-repeat";
-        frame.style.display = "flex";
-        frame.style.alignItems = "center";
-        frame.style.justifyContent = "center";
+        frame.style.backgroundRepeat = "no-repeat";
+        frame.style.cursor = "pointer";
         col.append(frame);
 
         if (f.type === "image") {
@@ -156,6 +157,9 @@ async function FetchGalleryFiles () {
           const label = document.createElement("div");
           label.className = "chip-large";
           label.textContent = "View Video";
+          frame.style.display = "flex";
+          frame.style.alignItems = "center";
+          frame.style.justifyContent = "center";
           frame.append(label);
         }
 
