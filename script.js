@@ -226,7 +226,7 @@ async function FetchGalleryFiles() {
           <div class="dot"></div>
           <p class="medium">${loc}</p>
         </div>
-        <div class="files-container">${generate_files_html(files)}</div>
+        <div class="column-gap-16 files-container">${generate_files_html(files)}</div>
       `;
 
       const frame_placeholders = wrap.querySelectorAll(".file-frame-placeholder");
