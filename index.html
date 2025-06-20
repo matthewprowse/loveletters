@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Julia</title>
+
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <div class="page" id="today">
+        <div class="column-gap-16">
+            <div class="column-gap-8">
+                <div class="row">
+                    <div class="chip-small" id="note-number">0</div>
+                    <div class="dot"></div>
+                    <p class="medium-secondary" id="note-date">Fetching Date</p>
+                </div>
+                <h1 id="note-header">Fetching Header</h1>
+            </div>
+            <p id="note-body">Fetching Body</p>
+        </div>
+    </div>
+
+    <div class="page" id="history"></div>
+
+    <div class="page" id="gallery">
+        <div id="gallery-container" class="column-gap-16"></div>
+    </div>
+
+    <div class="page" id="new">
+        <h1>New Files</h1>
+
+        <input  id="new-location"  type="text"  class="input"
+                placeholder="Enter Location">
+
+        <label class="new-file">Select Files
+            <input id="new-files"  type="file"
+                class="file-input"
+                multiple
+                accept="image/*,video/*">
+        </label>
+
+        <button id="new-add-btn">Add Files</button>
+    </div>
+
+    <div class="tab-bar">
+        <button class="tab active" data-target="today">Today</button>
+        <button class="tab inactive" data-target="history">History</button>
+        <button class="tab inactive" data-target="gallery">Gallery</button>
+    </div>
+
+    <div class="footer">
+        <p class="small-medium-secondary">Made With Love, From Matthew</p>
+    </div>
+</body>
+</html>
