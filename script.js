@@ -82,7 +82,7 @@ async function FetchHistoryNotes() {
   });
 }
 
-async function FetchGalleryFiles () {
+async function FetchGalleryFiles() {
   const page = document.querySelector("#gallery");
 
   const { data, error } = await supa
@@ -97,91 +97,104 @@ async function FetchGalleryFiles () {
     (grouped[key] ||= []).push(f);
   });
 
-  page.innerHTML = "";
   const groups = Object.entries(grouped)
     .sort(([a],[b]) => new Date(a.split("||")[0]) - new Date(b.split("||")[0]));
 
-  const lazyBlocks = [];
+  const fragment = document.createDocumentFragment();
+  const lazy_blocks = [];
+
+  const create_file_frame = (file_data) => {
+    const frame = document.createElement("div");
+    frame.className = "block";
+    frame.style.cssText = "width:100%;aspect-ratio:1/1;border:1px solid rgba(197,197,197,.24);background-size:cover;background-position:center;background-repeat:no-repeat;cursor:pointer";
+    
+    if (file_data.type === "image") {
+      frame.dataset.src = `${file_data.path}?quality=70`;
+      lazy_blocks.push(frame);
+    } else {
+      frame.style.cssText += ";display:flex;align-items:center;justify-content:center";
+      frame.innerHTML = '<div class="chip-large">View Video</div>';
+    }
+    
+    frame.onclick = () => location.href = file_data.path;
+    return frame;
+  };
+
+  const create_save_button = (file_path) => {
+    const save_btn = document.createElement("div");
+    save_btn.className = "chip-large";
+    save_btn.textContent = "Save";
+    save_btn.style.cursor = "pointer";
+    save_btn.onclick = () => DownloadFile(file_path);
+    return save_btn;
+  };
 
   groups.forEach(([key, files], idx) => {
     const [date, loc] = key.split("||");
+    const file_paths = files.map(f => `"${f.path}"`).join(",");
 
     const wrap = document.createElement("div");
     wrap.className = "column-gap-16";
-    page.append(wrap);
-
-    // header
-    wrap.insertAdjacentHTML("beforeend", `
+    
+    wrap.innerHTML = `
       <div class="row-space-between">
         <p class="medium-secondary">${Format(date)}</p>
-        <div class="chip-large" style="cursor:pointer"
-             onclick='BatchDownload([${files.map(f => `"${f.path}"`)}])'>Save All</div>
+        <div class="chip-large" style="cursor:pointer" onclick="BatchDownload([${file_paths}])">Save All</div>
       </div>
       <div class="row">
         <div class="chip-small">${files[0]?.group.id ?? ""}</div>
         <div class="dot"></div>
         <p class="medium">${loc}</p>
-      </div>`);
+      </div>
+    `;
 
-    for (let i = 0; i < files.length; i += 2) {
-      const row = document.createElement("div");
-      row.className = "row";
-      row.style.gap = "12px";
-      wrap.append(row);
-
-      for (let j = 0; j < 2; j++) {
-        const f = files[i + j];
-        if (!f) continue;
-
-        const col = document.createElement("div");
-        col.className = "column-gap-8";
-        col.style.flex = "1";
-        row.append(col);
-
-        const frame = document.createElement("div");
-        frame.className = "block";
-        frame.style.width = "100%";
-        frame.style.aspectRatio = "1 / 1";
-        frame.style.border = "1px solid rgba(197,197,197,.24)";
-        frame.style.backgroundSize = "cover";
-        frame.style.backgroundPosition = "center";
-        frame.style.backgroundRepeat = "no-repeat";
-        frame.style.cursor = "pointer";
-        col.append(frame);
-
-        if (f.type === "image") {
-          frame.dataset.src = `${f.path}?quality=70`;
-          lazyBlocks.push(frame);
-        } else {
-          frame.style.display = "flex";
-          frame.style.alignItems = "center";
-          frame.style.justifyContent = "center";
-          const label = document.createElement("div");
-          label.className = "chip-large";
-          label.textContent = "View Video";
-          frame.append(label);
-        }
-
-        frame.onclick = () => location.href = f.path;
-
-        const saveWrap = document.createElement("div");
-        saveWrap.className = "row-flex-end";
-        col.append(saveWrap);
-
-        const saveBtn = document.createElement("div");
-        saveBtn.className = "chip-large";
-        saveBtn.textContent = "Save";
-        saveBtn.style.cursor = "pointer";
-        saveBtn.onclick = () => Download(f.path);
-        saveWrap.append(saveBtn);
+    const files_container = document.createElement("div");
+    files_container.innerHTML = files.reduce((html, file_data, i) => {
+      if (i % 2 === 0) {
+        const next_file = files[i + 1];
+        const row_html = `
+          <div class="row" style="gap:12px">
+            <div class="column-gap-8" style="flex:1">
+              <div class="file-frame-placeholder"></div>
+              <div class="row-flex-end">
+                <div class="chip-large" style="cursor:pointer" onclick="DownloadFile('${file_data.path}')">Save</div>
+              </div>
+            </div>
+            ${next_file ? `
+              <div class="column-gap-8" style="flex:1">
+                <div class="file-frame-placeholder"></div>
+                <div class="row-flex-end">
+                  <div class="chip-large" style="cursor:pointer" onclick="DownloadFile('${next_file.path}')">Save</div>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+        return html + row_html;
       }
-    }
+      return html;
+    }, "");
+
+    const frame_placeholders = files_container.querySelectorAll(".file-frame-placeholder");
+    files.forEach((file_data, i) => {
+      if (frame_placeholders[i]) {
+        frame_placeholders[i].replaceWith(create_file_frame(file_data));
+      }
+    });
+
+    wrap.appendChild(files_container);
+    fragment.appendChild(wrap);
 
     if (idx !== groups.length - 1) {
-      page.insertAdjacentHTML("beforeend",
-        '<div class="row-center"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>');
+      const separator = document.createElement("div");
+      separator.className = "row-center";
+      separator.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+      fragment.appendChild(separator);
     }
   });
+
+  page.innerHTML = "";
+  page.appendChild(fragment);
 
   const io = new IntersectionObserver(entries => {
     entries.forEach(entry => {
@@ -193,10 +206,10 @@ async function FetchGalleryFiles () {
     });
   }, { rootMargin: "200px 0px" });
 
-  lazyBlocks.forEach(el => io.observe(el));
+  lazy_blocks.forEach(el => io.observe(el));
 }
 
-async function Download(url) {
+async function DownloadFile(url) {
   const file_name = url.split("/").pop().split("?")[0];
 
   const blob = await fetch(url).then(r => r.blob());
@@ -212,7 +225,7 @@ async function Download(url) {
   URL.revokeObjectURL(blob_url);
 }
 
-function BatchDownload(arr) { arr.forEach(Download); }
+function BatchDownload(arr) { arr.forEach(DownloadFile); }
 
 function SetNote(n,d,h,b){
   document.getElementById("note-number").textContent = n;
@@ -263,7 +276,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic')) {
           console.log("Converting HEIC:", file.name);
           try {
-            const converted_file = await ConvertHeicToJpg(file);
+            const converted_file = await ConvertHeicToJpgFile(file);
             file_to_upload = converted_file;
             file_name = converted_file.name;
             console.log("HEIC Converted:", file_name);
@@ -354,7 +367,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 });
 
-async function ConvertHeicToJpg(heic_file) {
+async function ConvertHeicToJpgFile(heic_file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     
