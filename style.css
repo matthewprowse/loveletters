@@ -251,6 +251,8 @@ button {
 
     aspect-ratio: 1 / 1;
 
+    width: 100%;
+
     display: flex;
     flex-direction: row;
 
