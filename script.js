@@ -141,8 +141,8 @@ async function FetchGalleryFiles() {
 
   const { data, error } = await supa
     .from("file")
-    .select("path,type,group(id,date,location)")
-    .order("date", { foreignTable: "group", ascending: false })
+    .select("path,type,gallery_group:group(id,date,location)")
+    .order("date", { foreignTable: "gallery_group", ascending: false })
     .range(current_page * items_per_page, (current_page + 1) * items_per_page - 1);
 
   if (error || !data?.length) { 
@@ -153,7 +153,7 @@ async function FetchGalleryFiles() {
 
   const grouped = {};
   data.forEach(f => {
-    const key = `${f.group.date}||${f.group.location}`;
+    const key = `${f.gallery_group.date}||${f.gallery_group.location}`;
     (grouped[key] ||= []).push(f);
   });
 
@@ -222,7 +222,7 @@ async function FetchGalleryFiles() {
           <div class="chip-large" style="cursor:pointer" onclick="BatchDownload([${file_paths}])">Save All</div>
         </div>
         <div class="row">
-          <div class="chip-small">${files[0]?.group.id ?? ""}</div>
+          <div class="chip-small">${files[0]?.gallery_group.id ?? ""}</div>
           <div class="dot"></div>
           <p class="medium">${loc}</p>
         </div>
