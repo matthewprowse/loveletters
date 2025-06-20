@@ -82,8 +82,8 @@ async function FetchHistoryNotes() {
   });
 }
 
-async function FetchGalleryFiles() {
-  const page_node = document.querySelector("#gallery");
+async function FetchGalleryFiles () {
+  const page = document.querySelector("#gallery");
 
   const { data, error } = await supa
     .from("file")
@@ -97,22 +97,22 @@ async function FetchGalleryFiles() {
     (grouped[key] ||= []).push(f);
   });
 
-  page_node.innerHTML = "";
+  page.innerHTML = "";
   const groups = Object.entries(grouped)
-    .sort(([a],[b]) => new Date(a.split("||")[0]) - new Date(b.split("||")[0]));
+    .sort(([a], [b]) => new Date(a.split("||")[0]) - new Date(b.split("||")[0]));
 
   groups.forEach(([key, files], idx) => {
     const [date, loc] = key.split("||");
 
-    const group_wrap = document.createElement("div");
-    group_wrap.className = "column-gap-16";
-    page_node.append(group_wrap);
+    const wrap = document.createElement("div");
+    wrap.className = "column-gap-16";
+    page.append(wrap);
 
-    group_wrap.insertAdjacentHTML("beforeend", `
+    wrap.insertAdjacentHTML("beforeend", `
       <div class="row-space-between">
         <p class="medium-secondary">${Format(date)}</p>
         <div class="chip-large" style="cursor:pointer"
-             onclick='BatchDownload([${files.map(f=>`"${f.path}"`)}])'>Save All</div>
+             onclick='BatchDownload([${files.map(f => `"${f.path}"`)}])'>Save All</div>
       </div>
       <div class="row">
         <div class="chip-small">${files[0]?.group.id ?? ""}</div>
@@ -123,7 +123,7 @@ async function FetchGalleryFiles() {
     for (let i = 0; i < files.length; i += 2) {
       const row = document.createElement("div");
       row.className = "row";
-      group_wrap.append(row);
+      wrap.append(row);
 
       for (let j = 0; j < 2; j++) {
         const f = files[i + j];
@@ -133,43 +133,49 @@ async function FetchGalleryFiles() {
         col.className = "column-gap-8";
         row.append(col);
 
-        const preview = document.createElement("div");
-        preview.className = "block";
-        preview.style.border = "1px solid rgba(197, 197, 197, 0.24)";
-        preview.style.display = "flex";
-        preview.style.alignItems = "center";
-        preview.style.justifyContent = "center";
-        preview.style.cursor = "pointer";
-        col.append(preview);
+        const frame = document.createElement("div");
+        frame.className = "block";
+        frame.style.border = "1px solid rgba(197,197,197,.24)";
+        frame.style.display = "flex";
+        frame.style.alignItems = "center";
+        frame.style.justifyContent = "center";
+        frame.style.cursor  = "pointer";
+        col.append(frame);
 
         if (f.type === "image") {
-          preview.style.backgroundImage = `url("${f.path}")`;
-          preview.style.backgroundSize = "cover";
-          preview.style.backgroundPosition = "center";
+          const thumb = `${f.path}?width=800&quality=65`;
+          const img = document.createElement("img");
+          img.src = thumb;
+          img.loading = "lazy";
+          img.style.width  = "100%";
+          img.style.height = "100%";
+          img.style.objectFit = "cover";
+          frame.append(img);
         } else {
           const label = document.createElement("div");
           label.className = "chip-large";
           label.textContent = "View Video";
-          preview.append(label);
+          frame.append(label);
         }
 
-        preview.onclick = () => { location.href = f.path; };
+        frame.onclick = () => location.href = f.path;
 
-        const save_wrap = document.createElement("div");
-        save_wrap.className = "row-flex-end";
-        col.append(save_wrap);
+        const saveWrap = document.createElement("div");
+        saveWrap.className = "row-flex-end";
+        col.append(saveWrap);
 
-        const save_btn = document.createElement("div");
-        save_btn.className = "chip-large";
-        save_btn.textContent = "Save";
-        save_btn.style.cursor = "pointer";
-        save_btn.onclick = () => Download(f.path);
-        save_wrap.append(save_btn);
+        const saveBtn = document.createElement("div");
+        saveBtn.className = "chip-large";
+        saveBtn.textContent = "Save";
+        saveBtn.style.cursor = "pointer";
+        saveBtn.onclick = () => Download(f.path);
+        saveWrap.append(saveBtn);
       }
     }
 
     if (idx !== groups.length - 1) {
-      page_node.insertAdjacentHTML("beforeend", '<div class="row-center"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>');
+      page.insertAdjacentHTML("beforeend",
+        '<div class="row-center"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>');
     }
   });
 }
