@@ -256,6 +256,8 @@ button {
     flex-direction: column;
     justify-content: flex-end;
 
+    padding: 0px;
+
     background-size: cover;
     background-position: center;
     cursor: pointer;
