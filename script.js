@@ -138,16 +138,19 @@ async function FetchGalleryFiles () {
         const frame = document.createElement("div");
         frame.className = "block";
         frame.style.border  = "1px solid rgba(197,197,197,.24)";
+        frame.style.cursor  = "pointer";
+        frame.style.width   = "100%";
+        frame.style.aspectRatio = "1 / 1";
+        frame.style.backgroundSize     = "cover";
+        frame.style.backgroundPosition = "center";
+        frame.style.backgroundRepeat   = "no-repeat";
         frame.style.display = "flex";
         frame.style.alignItems = "center";
         frame.style.justifyContent = "center";
-        frame.style.cursor = "pointer";
         col.append(frame);
 
         if (f.type === "image") {
           frame.dataset.src = `${f.path}?quality=65`;
-          frame.style.backgroundSize     = "cover";
-          frame.style.backgroundPosition = "center";
           lazyBlocks.push(frame);
         } else {
           const label = document.createElement("div");
