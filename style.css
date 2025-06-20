@@ -255,7 +255,6 @@ button {
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    padding: 16px;
 
     background-size: cover;
     background-position: center;
