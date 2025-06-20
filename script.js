@@ -89,10 +89,7 @@ async function FetchGalleryFiles () {
     .from("file")
     .select("path,type,group(id,date,location)");
 
-  if (error || !data?.length) {
-    console.error("file fetch", error);
-    return;
-  }
+  if (error || !data?.length) { console.error("file fetch", error); return; }
 
   const grouped = {};
   data.forEach(f => {
@@ -102,7 +99,7 @@ async function FetchGalleryFiles () {
 
   page.innerHTML = "";
   const groups = Object.entries(grouped)
-    .sort(([a], [b]) => new Date(a.split("||")[0]) - new Date(b.split("||")[0]));
+    .sort(([a],[b]) => new Date(a.split("||")[0]) - new Date(b.split("||")[0]));
 
   const lazyBlocks = [];
 
@@ -113,6 +110,7 @@ async function FetchGalleryFiles () {
     wrap.className = "column-gap-16";
     page.append(wrap);
 
+    // header
     wrap.insertAdjacentHTML("beforeend", `
       <div class="row-space-between">
         <p class="medium-secondary">${Format(date)}</p>
@@ -128,6 +126,7 @@ async function FetchGalleryFiles () {
     for (let i = 0; i < files.length; i += 2) {
       const row = document.createElement("div");
       row.className = "row";
+      row.style.gap = "12px";
       wrap.append(row);
 
       for (let j = 0; j < 2; j++) {
@@ -136,13 +135,14 @@ async function FetchGalleryFiles () {
 
         const col = document.createElement("div");
         col.className = "column-gap-8";
+        col.style.flex = "1";
         row.append(col);
 
         const frame = document.createElement("div");
         frame.className = "block";
-        frame.style.width = "calc(50% - 12px)";
+        frame.style.width  = "100%";
         frame.style.aspectRatio = "1 / 1";
-        frame.style.border = "1px solid rgba(197, 197, 197, 0.24)";
+        frame.style.border = "1px solid rgba(197,197,197,.24)";
         frame.style.backgroundSize = "cover";
         frame.style.backgroundPosition = "center";
         frame.style.backgroundRepeat = "no-repeat";
@@ -150,15 +150,15 @@ async function FetchGalleryFiles () {
         col.append(frame);
 
         if (f.type === "image") {
-          frame.dataset.src = `${f.path}?width=600&quality=50`;
+          frame.dataset.src = `${f.path}?width=700&quality=70`;
           lazyBlocks.push(frame);
         } else {
-          const label = document.createElement("div");
-          label.className = "chip-large";
-          label.textContent = "View Video";
           frame.style.display = "flex";
           frame.style.alignItems = "center";
           frame.style.justifyContent = "center";
+          const label = document.createElement("div");
+          label.className = "chip-large";
+          label.textContent = "View Video";
           frame.append(label);
         }
 
