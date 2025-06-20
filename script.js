@@ -101,6 +101,8 @@ async function FetchGalleryFiles () {
   const groups = Object.entries(grouped)
     .sort(([a], [b]) => new Date(a.split("||")[0]) - new Date(b.split("||")[0]));
 
+  const lazyBlocks = [];
+
   groups.forEach(([key, files], idx) => {
     const [date, loc] = key.split("||");
 
@@ -135,22 +137,18 @@ async function FetchGalleryFiles () {
 
         const frame = document.createElement("div");
         frame.className = "block";
-        frame.style.border = "1px solid rgba(197,197,197,.24)";
+        frame.style.border  = "1px solid rgba(197,197,197,.24)";
         frame.style.display = "flex";
         frame.style.alignItems = "center";
         frame.style.justifyContent = "center";
-        frame.style.cursor  = "pointer";
+        frame.style.cursor = "pointer";
         col.append(frame);
 
         if (f.type === "image") {
-          const thumb = `${f.path}?width=800&quality=65`;
-          const img = document.createElement("img");
-          img.src = thumb;
-          img.loading = "lazy";
-          img.style.width  = "100%";
-          img.style.height = "100%";
-          img.style.objectFit = "cover";
-          frame.append(img);
+          frame.dataset.src = `${f.path}?quality=65`;
+          frame.style.backgroundSize     = "cover";
+          frame.style.backgroundPosition = "center";
+          lazyBlocks.push(frame);
         } else {
           const label = document.createElement("div");
           label.className = "chip-large";
@@ -178,6 +176,18 @@ async function FetchGalleryFiles () {
         '<div class="row-center"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>');
     }
   });
+
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const el = entry.target;
+        el.style.backgroundImage = `url("${el.dataset.src}")`;
+        io.unobserve(el);
+      }
+    });
+  }, { rootMargin: "200px 0px" });
+
+  lazyBlocks.forEach(el => io.observe(el));
 }
 
 async function Download(url) {
