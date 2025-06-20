@@ -208,6 +208,25 @@ async function FetchGalleryFiles() {
     return rows.join('');
   };
 
+  if (current_page > 0 && groups.length > 0) {
+    const last_group_element = page.querySelector('.column-gap-16:last-of-type');
+    if (last_group_element && last_group_element.dataset.groupKey === groups[0][0]) {
+      const files_to_append = groups[0][1];
+      const files_container = last_group_element.querySelector('.files-container');
+      if (files_container) {
+        const temp_div = document.createElement('div');
+        temp_div.innerHTML = generate_files_html(files_to_append);
+        const frame_placeholders = temp_div.querySelectorAll(".file-frame-placeholder");
+        frame_placeholders.forEach(placeholder => {
+          const file_data = files_to_append[parseInt(placeholder.dataset.index)];
+          if (file_data) placeholder.replaceWith(create_file_frame(file_data));
+        });
+        while (temp_div.firstChild) files_container.appendChild(temp_div.firstChild);
+      }
+      groups.shift();
+    }
+  }
+
   const batch_create_elements = () => {
     groups.forEach(([key, files], idx) => {
       const [date, loc] = key.split("||");
@@ -215,6 +234,7 @@ async function FetchGalleryFiles() {
 
       const wrap = document.createElement("div");
       wrap.className = "column-gap-16";
+      wrap.dataset.groupKey = key;
       
       wrap.innerHTML = `
         <div class="row-space-between">
@@ -230,7 +250,7 @@ async function FetchGalleryFiles() {
       `;
 
       const frame_placeholders = wrap.querySelectorAll(".file-frame-placeholder");
-      frame_placeholders.forEach((placeholder, i) => {
+      frame_placeholders.forEach((placeholder) => {
         const file_data = files[parseInt(placeholder.dataset.index)];
         if (file_data) {
           placeholder.replaceWith(create_file_frame(file_data));
@@ -280,8 +300,8 @@ async function FetchGalleryFiles() {
 
   if (data.length === items_per_page) {
     const load_more = document.createElement("div");
+    load_more.id = "load-more-container";
     load_more.className = "row-center";
-    load_more.style.padding = "20px";
     load_more.innerHTML = '<div class="chip-large" style="cursor:pointer" onclick="LoadMoreGallery()">Load More</div>';
     page.appendChild(load_more);
   }
@@ -290,6 +310,10 @@ async function FetchGalleryFiles() {
 }
 
 const LoadMoreGallery = debounce(() => {
+  const load_more_container = document.getElementById("load-more-container");
+  if (load_more_container) {
+    load_more_container.remove();
+  }
   current_page++;
   FetchGalleryFiles();
 }, 100);
