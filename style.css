@@ -1,29 +1,48 @@
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;600&display=swap");
 
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
 /* Pages */
 body {
     font-family: "Manrope";
-    margin: 16px;
+    margin: 0;
+    padding-bottom: 115.5px; /* Default padding for pages without FAB */
+}
 
-    padding-bottom: 112px;
+body.body-padded-for-fab {
+    padding-bottom: 179.5px; /* Reduced extra padding */
 }
 
 .page {
     display: none;
-
     flex-direction: column;
-    gap: 24px;
 }
 
 .page:first-of-type {
     display: flex;
 }
 
+.page#gallery {
+    padding: 110px 16px 16px; 
+}
+
+.page#history {
+    padding: 110px 16px 16px; 
+}
+
+.page#today {
+    padding: 110px 16px 16px;
+}
+
 /* Tab Navigation */
 .tab-bar {
     position: fixed;
 
-    bottom: 40px;
+    bottom: 48.5px;
     
     left: 16px;
     right: 16px;
@@ -83,7 +102,7 @@ body {
     left: 0px;
     right: 0px;
 
-    padding-bottom: 8px;
+    padding-bottom: 16px;
 
     text-align: center;
     pointer-events: none;
@@ -175,7 +194,6 @@ button {
     background-color: rgba(197, 197, 197, 0.16);
 
     appearance: none;
-
 }
 .input:focus {
     background-color: rgba(197, 197, 197, 0.08);
@@ -187,29 +205,67 @@ button {
 }
 
 .new-file {
-    display: inline-flex;
+    width: 100%;
+    height: 164px;
+    border: none;
+    border-radius: 24px;
+    background-color: rgba(197, 197, 197, 0.16);
+    display: flex;
     align-items: center;
     justify-content: center;
-
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    font-family: "Manrope";
     font-size: 14px;
     font-weight: 600;
     line-height: 24px;
-    color: rgba(0, 0, 0, 0.48);
+    color: rgba(0, 0, 0, 0.5);
+}
 
-    padding: 16px;
-    border-radius: 32px;
-    background-color: rgba(197, 197, 197, 0.16);
-    cursor: pointer;
-
-    font-family: "Manrope";
-    font-size: 14px;
-    line-height: 24px;
-
-    text-align: center;
+.new-file:hover {
+    background-color: rgba(197, 197, 197, 0.08);
 }
 
 .file-input {
     display: none;
+}
+
+.processing-separator {
+    height: 1px;
+    background-color: rgba(197, 197, 197, 0.12);
+    margin: 0;
+}
+
+.processing-text {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 28px;
+    color: rgba(0, 0, 0, 1);
+    margin: 16px 0;
+    padding: 0;
+    font-family: "Manrope";
+}
+
+.processing-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.file-list-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.file-preview-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+    margin-bottom: 80px; /* Space for fixed button */
 }
 
 /* Containers */
@@ -225,10 +281,9 @@ button {
 
 .row-center {
     display: flex;
-    flex-direction: row;
-    column-gap: 12px;
-
     justify-content: center;
+    align-items: center;
+    column-gap: 8px;
 }
 
 .row-space-between {
@@ -246,21 +301,23 @@ button {
 
 .block {
     border-radius: 24px;
-
+    overflow: hidden;
+    position: relative;
+    transform: translateZ(0);
     background-color: rgba(197, 197, 197, 0.16);
-
+    flex: 1;
     aspect-ratio: 1 / 1;
-
     width: 100%;
-
-    display: flex;
-    flex-direction: row;
-
-    padding: 0px;
-
+    
     background-size: cover;
     background-position: center;
+    background-repeat: no-repeat;
     cursor: pointer;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(197,197,197,.24);
 }
 
 .block.video::after {
@@ -326,4 +383,580 @@ h1 {
     color: black;
 
     margin-block: 0px;
+}
+
+h2 {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 32px;
+    color: black;
+    margin-block: 0px;
+}
+
+/* Upload Progress */
+.upload-progress {
+    position: fixed;
+    bottom: 40px;
+    left: 16px;
+    right: 16px;
+    
+    background: rgba(197, 197, 197, 0.04);
+    border-style: solid;
+    border-color: rgba(197, 197, 197, 0.12);
+    border-radius: 32px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.12);
+    padding: 16px;
+    
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background-color: rgba(255, 255, 255, 0.48);
+    z-index: 12;
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: rgba(197, 197, 197, 0.16);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: rgba(197, 197, 197, 0.48);
+    border-radius: 4px;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.progress-details {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+    color: rgba(0, 0, 0, 0.48);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Gallery Floating Header */
+.gallery-floating-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 110px; /* Give it a fixed height */
+    box-sizing: border-box; /* Ensure padding is included in the height */
+    display: flex; /* To enable vertical alignment */
+    align-items: center; /* Vertically center the inner content */
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid transparent;
+    z-index: 10;
+    display: none; /* Controlled by JavaScript */
+    transition: none;
+}
+
+.gallery-floating-header.scrolled,
+#history-floating-header.scrolled {
+    border-bottom-color: rgba(197, 197, 197, 0.12);
+}
+
+/* History Floating Header - starts with no bottom padding and no border */
+#history-floating-header {
+    /* This class is now only for visibility toggling. */
+    /* All layout styles are handled by .gallery-floating-header */
+    /* Let's ensure it also has a fixed height for consistency if base class changes */
+    height: 110px;
+    padding: 16px;
+    border-bottom: 1px solid transparent;
+    transition: none; /* Remove all animations */
+}
+
+/* Scroll to Top FAB */
+.scroll-to-top {
+    position: fixed;
+    bottom: 131.5px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    height: 48px;
+    width: auto;
+    padding: 0 24px;
+    border-radius: 24px;
+    background: rgba(197, 197, 197, 0.16);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 11;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 24px;
+    white-space: nowrap;
+    color: black;
+}
+
+.scroll-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+.scroll-to-top:hover {
+    background: rgba(197, 197, 197, 0.24);
+}
+
+/* Countdown Timer */
+.countdown-timer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 110px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    padding: 16px;
+
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(197, 197, 197, 0.12);
+    display: none; /* Controlled by JS */
+
+    flex-direction: column;
+}
+
+.countdown-header {
+    text-align: left;
+    height: 32px;
+}
+
+.countdown-content {
+    display: flex;
+    justify-content: flex-start;
+    gap: 12px;
+    align-items: center;
+}
+
+.countdown-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 0 8px; /* Give items some horizontal breathing room */
+}
+
+.countdown-number {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 36px;
+    color: black;
+}
+
+.countdown-label {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+    color: rgba(0, 0, 0, 0.48);
+}
+
+.countdown-separator {
+    font-size: 24px;
+    font-weight: 700;
+    color: rgba(0, 0, 0, 0.24);
+}
+
+/* New Gallery Grid Layout */
+.gallery-grid-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.gallery-item-wrapper:last-child:nth-child(odd) {
+    grid-column: span 2; /* Make last item full width if it's odd */
+}
+
+.gallery-item-wrapper:last-child:nth-child(odd) .block {
+    border-radius: 36px;
+}
+
+.note-separator {
+    padding-block: 24px;
+}
+
+.content-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.first-item-no-gap {
+    row-gap: 0;
+}
+
+/* New page specific styles */
+#new {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.new-page-header {
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(197, 197, 197, 0.12);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.new-page-header .new-page-title {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 32px;
+    color: black;
+    margin: 0;
+}
+
+#new > h2 {
+    /* This rule is now obsolete and can be removed or ignored */
+    display: none;
+}
+
+.new-header-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.new-header-count {
+    background: rgba(197, 197, 197, 0.16);
+    color: black;
+    border-radius: 16px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+    font-family: "Manrope";
+}
+
+.new-content {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.input-label {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+    color: rgba(0, 0, 0, 0.5);
+}
+
+#new-location {
+    font-family: "Manrope";
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+    color: rgba(0, 0, 0, 1);
+    border: none;
+    border-radius: 32px;
+    padding: 16px 16px;
+    background-color: rgba(197, 197, 197, 0.16);
+    appearance: none;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#new-location:focus {
+    background-color: rgba(197, 197, 197, 0.08);
+    border: none;
+    border-radius: 32px;
+    appearance: none;
+}
+
+#new-add-btn {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    background: rgba(197, 197, 197, 0.16);
+    color: black;
+    border: none;
+    padding: 0 24px;
+    height: 48px;
+    border-radius: 32px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 24px;
+    cursor: pointer;
+    z-index: 100;
+    font-family: "Manrope";
+}
+
+#new-add-btn:hover {
+    background: rgba(197, 197, 197, 0.24);
+}
+
+#new-add-btn:active {
+    background: rgba(197, 197, 197, 0.32);
+}
+
+.file-preview-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: none;
+}
+
+.file-preview-item:last-child {
+    border-bottom: none;
+}
+
+.file-preview-thumbnail {
+    display: none;
+}
+
+.file-preview-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.file-preview-name {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 24px;
+    color: black;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: "Manrope";
+}
+
+.file-preview-status {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+    color: rgba(0, 0, 0, 0.5);
+    margin: 0;
+    font-family: "Manrope";
+}
+
+.file-preview-status.uploading {
+    color: rgba(0, 0, 0, 0.7);
+}
+
+.file-preview-status.complete {
+    color: rgba(0, 128, 0, 0.8);
+}
+
+.file-preview-status.error {
+    color: rgba(255, 0, 0, 0.8);
+}
+
+.file-preview-size {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+    color: rgba(0, 0, 0, 0.5);
+    margin: 0;
+}
+
+.file-preview-progress {
+    display: none;
+}
+
+.file-preview-remove {
+    background: rgba(197, 197, 197, 0.16);
+    border: none;
+    color: black;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+    transition: background-color 0.2s;
+    font-family: "Manrope";
+}
+
+.file-preview-remove:hover {
+    background: rgba(197, 197, 197, 0.24);
+}
+
+/* Upload progress styles */
+.upload-progress {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--background-color);
+    border-top: 1px solid var(--border-color);
+    padding: 16px;
+    z-index: 200;
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--accent-color);
+    transition: width 0.3s ease;
+}
+
+.progress-details {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+#today-floating-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(197, 197, 197, 0.12);
+    z-index: 10;
+    display: none;
+    transition: none;
+}
+
+/* Modal styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.modal-content {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 24px;
+    padding: 24px;
+    max-width: 320px;
+    width: 100%;
+    box-shadow: 0px 8px 32px rgba(0, 0, 0, 0.12);
+    border: 1px solid rgba(197, 197, 197, 0.12);
+}
+
+.modal-title {
+    font-family: "Manrope";
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 28px;
+    color: rgba(0, 0, 0, 1);
+    margin: 0 0 16px 0;
+    text-align: center;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.modal-btn {
+    flex: 1;
+    height: 48px;
+    border: none;
+    border-radius: 32px;
+    font-family: "Manrope";
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 24px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.modal-btn-cancel {
+    background: rgba(197, 197, 197, 0.16);
+    color: black;
+}
+
+.modal-btn-cancel:hover {
+    background: rgba(197, 197, 197, 0.24);
+}
+
+.modal-btn-continue {
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+}
+
+.modal-btn-continue:hover {
+    background: rgba(0, 0, 0, 1);
+}
+
+.processing-section-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }

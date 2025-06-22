@@ -7,6 +7,7 @@
 
     <link rel="stylesheet" href="style.css">
     
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script src="script.js" defer></script>
 </head>
@@ -25,26 +26,57 @@
         </div>
     </div>
 
-    <div class="page" id="history"></div>
+    <div class="page" id="history">
+        <div id="history-container" class="column-gap-16"></div>
+    </div>
 
     <div class="page" id="gallery">
-        <div id="gallery-container" class="column-gap-16"></div>
+        <!-- Gallery content is injected here -->
     </div>
 
     <div class="page" id="new">
-        <h1>New Files</h1>
+        <div class="new-page-header">
+            <h2 class="new-page-title">New Files</h2>
+            <span class="new-header-count" id="file-count">0 Files</span>
+        </div>
 
-        <input  id="new-location"  type="text"  class="input"
-                placeholder="Enter Location">
+        <div class="new-content">
+            <div class="input-group">
+                <label class="input-label">Location</label>
+                <input id="new-location" type="text" placeholder="Enter Location">
+            </div>
 
-        <label class="new-file">Select Files
-            <input id="new-files"  type="file"
-                class="file-input"
-                multiple
-                accept="image/*,video/*">
-        </label>
+            <div class="input-group">
+                <label class="new-file">Upload Files
+                    <input id="new-files" type="file"
+                        class="file-input"
+                        multiple
+                        accept="image/*,video/*">
+                </label>
+            </div>
+
+            <div class="processing-separator"></div>
+            <h2 class="processing-text">Now Processing</h2>
+
+            <div class="file-list-section">
+                <div id="file-preview-list" class="file-preview-list">
+                    <!-- File previews will be added here -->
+                </div>
+            </div>
+        </div>
 
         <button id="new-add-btn">Add Files</button>
+        
+        <div id="upload-progress" class="upload-progress" style="display: none;">
+            <div class="progress-header">
+                <p class="medium-secondary">Uploading Files</p>
+                <p class="small-medium-secondary" id="progress-text">0 of 0 complete</p>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="progress-details" id="progress-details"></div>
+        </div>
     </div>
 
     <div class="tab-bar">
@@ -55,6 +87,48 @@
 
     <div class="footer">
         <p class="small-medium-secondary">Made With Love, From Matthew</p>
+    </div>
+
+    <div id="today-floating-header" class="countdown-timer">
+        <div class="column-gap-8">
+            <div class="countdown-header">
+                <div class="row">
+                    <div class="chip-small" id="floating-note-number">0</div>
+                    <div class="dot"></div>
+                    <p class="medium-secondary" id="floating-note-date">I'm Arriving Back In</p>
+                </div>
+            </div>
+            <div class="countdown-content">
+                <h2 id="countdown-timer">Loading...</h2>
+            </div>
+        </div>
+    </div>
+
+    <div id="gallery-floating-header" class="gallery-floating-header">
+        <div class="column-gap-8">
+            <!-- Header content will be injected by JavaScript -->
+        </div>
+    </div>
+
+    <div id="history-floating-header" class="gallery-floating-header">
+        <div class="column-gap-8">
+            <!-- Header content will be injected by JavaScript -->
+        </div>
+    </div>
+
+    <div class="scroll-to-top" id="scroll-to-top" onclick="scrollToTop()">
+        Go Back
+    </div>
+
+    <!-- Upload Confirmation Modal -->
+    <div id="upload-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2 class="modal-title" id="modal-title">0 Files Uploaded</h2>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-cancel" id="modal-cancel">Cancel</button>
+                <button class="modal-btn modal-btn-continue" id="modal-continue">Continue</button>
+            </div>
+        </div>
     </div>
 </body>
 </html>
