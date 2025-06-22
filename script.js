@@ -4,7 +4,7 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const date_cache = new Map();
-const format_cached = (s) => {
+const FormatCached = (s) => {
   if (!date_cache.has(s)) {
     date_cache.set(s, new Date(s).toLocaleDateString("en-ZA", 
       { weekday:"long", day:"numeric", month:"long", year:"numeric" }));
@@ -13,23 +13,8 @@ const format_cached = (s) => {
 };
 
 let gallery_observer = null;
-let image_cache = new Map();
 
-const debounce = (func, wait) => {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-};
-
-const preload_image = (src) => {
-  if (image_cache.has(src)) return image_cache.get(src);
-  
+const PreloadImage = (src) => {
   const img = new Image();
   const promise = new Promise((resolve, reject) => {
     img.onload = () => resolve(img);
@@ -37,7 +22,6 @@ const preload_image = (src) => {
   });
   
   img.src = src;
-  image_cache.set(src, promise);
   return promise;
 };
 
@@ -49,49 +33,69 @@ document.addEventListener("DOMContentLoaded", () => {
   
   if (!loc_input || !file_pick || !add_btn || !file_preview_list) return;
 
-  let selectedFiles = new Map(); // Map to store file objects with their preview elements
+  let selected_files = new Map();
 
-  // Initialize visibility
-  updateVisibility();
-
-  // Handle file selection
   file_pick.addEventListener('change', (event) => {
     const files = Array.from(event.target.files || []);
     
     files.forEach(file => {
-      if (!selectedFiles.has(file.name)) {
-        addFilePreview(file);
+      if (!selected_files.has(file.name)) {
+        AddFilePreview(file);
       }
     });
     
-    // Clear the input to allow selecting the same file again
     event.target.value = '';
     
-    // Show/hide elements based on whether there are files
-    updateVisibility();
+    UpdateFileCount();
   });
 
-  function updateVisibility() {
-    const hasFiles = selectedFiles.size > 0;
-    const separator = document.querySelector('.processing-separator');
-    const processingText = document.querySelector('.processing-text');
-    const addBtn = document.getElementById('new-add-btn');
-    const fileCount = document.getElementById('file-count');
-    
-    if (separator) separator.style.display = hasFiles ? 'block' : 'none';
-    if (processingText) processingText.style.display = hasFiles ? 'block' : 'none';
-    if (addBtn) addBtn.style.display = hasFiles ? 'block' : 'none';
-    if (fileCount) {
-      const count = selectedFiles.size;
-      fileCount.textContent = count === 1 ? '1 File' : `${count} Files`;
+  function UpdateFileCount() {
+    const file_count = document.getElementById('file-count');
+    if (file_count) {
+      const photo_count = Array.from(selected_files.values()).filter(f => f.file.type.startsWith('image/')).length;
+      const video_count = Array.from(selected_files.values()).filter(f => f.file.type.startsWith('video/')).length;
+      
+      let count_text = [];
+      if (photo_count > 0) count_text.push(`${photo_count} Photo${photo_count > 1 ? 's' : ''}`);
+      if (video_count > 0) count_text.push(`${video_count} Video${video_count > 1 ? 's' : ''}`);
+      
+      file_count.textContent = count_text.length > 0 ? count_text.join(', ') : '0 Files';
     }
   }
 
-  function addFilePreview(file) {
-    const fileId = `${file.name}-${Date.now()}`;
-    const fileItem = document.createElement('div');
-    fileItem.className = 'file-preview-item';
-    fileItem.dataset.fileId = fileId;
+  function AddFilePreview(file) {
+    const file_id = `${file.name}-${Date.now()}`;
+    const file_item = document.createElement('div');
+    file_item.className = 'file-preview-item';
+    file_item.dataset.fileId = file_id;
+    
+    const thumbnail = document.createElement('div');
+    thumbnail.className = 'file-preview-thumbnail';
+    
+    if (file.type.startsWith('image/')) {
+      const img = document.createElement('img');
+      img.style.width = '48px';
+      img.style.height = '48px';
+      img.style.borderRadius = '12px';
+      img.style.objectFit = 'cover';
+      
+      img.onerror = () => {
+        thumbnail.innerHTML = '<div style="width: 48px; height: 48px; background: rgba(197, 197, 197, 0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-family: Manrope; font-size: 12px; font-weight: 600; line-height: 16px; color: black;">Photo</div>';
+      };
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        img.src = e.target.result;
+      };
+      reader.onerror = () => {
+        thumbnail.innerHTML = '<div style="width: 48px; height: 48px; background: rgba(197, 197, 197, 0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-family: Manrope; font-size: 12px; font-weight: 600; line-height: 16px; color: black;">Photo</div>';
+      };
+      reader.readAsDataURL(file);
+      
+      thumbnail.appendChild(img);
+    } else {
+      thumbnail.innerHTML = '<div style="width: 48px; height: 48px; background: rgba(197, 197, 197, 0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-family: Manrope; font-size: 12px; font-weight: 600; line-height: 16px; color: black;">Video</div>';
+    }
     
     const info = document.createElement('div');
     info.className = 'file-preview-info';
@@ -100,58 +104,78 @@ document.addEventListener("DOMContentLoaded", () => {
     name.className = 'file-preview-name';
     name.textContent = file.name;
     
-    const removeBtn = document.createElement('button');
-    removeBtn.className = 'chip-large file-preview-remove';
-    removeBtn.textContent = 'Remove';
-    removeBtn.onclick = () => removeFile(fileId);
+    const status_text = document.createElement('p');
+    status_text.className = 'status-text';
+    status_text.style.fontSize = '12px';
+    status_text.style.fontWeight = '600';
+    status_text.style.color = 'rgba(0, 0, 0, 0.5)';
+    status_text.style.margin = '0';
+    status_text.style.lineHeight = '16px';
+    status_text.style.fontFamily = 'Manrope';
+    status_text.textContent = 'Ready';
     
-    info.appendChild(name);
+    const file_column = document.createElement('div');
+    file_column.className = 'column-no-gap';
+    file_column.appendChild(status_text);
+    file_column.appendChild(name);
     
-    fileItem.appendChild(info);
-    fileItem.appendChild(removeBtn);
+    const remove_btn = document.createElement('button');
+    remove_btn.className = 'chip-large file-preview-remove';
+    remove_btn.textContent = 'Remove';
+    remove_btn.onclick = () => RemoveFile(file_id);
     
-    file_preview_list.appendChild(fileItem);
+    info.appendChild(file_column);
     
-    selectedFiles.set(fileId, {
+    file_item.appendChild(thumbnail);
+    file_item.appendChild(info);
+    file_item.appendChild(remove_btn);
+    
+    file_preview_list.appendChild(file_item);
+    
+    selected_files.set(file_id, {
       file: file,
-      element: fileItem,
-      name: name
+      element: file_item,
+      name: name,
+      status_text: status_text
     });
   }
 
-  function removeFile(fileId) {
-    const fileData = selectedFiles.get(fileId);
-    if (fileData) {
-      fileData.element.remove();
-      selectedFiles.delete(fileId);
-      updateVisibility();
+  function RemoveFile(file_id) {
+    const file_data = selected_files.get(file_id);
+    if (file_data) {
+      file_data.element.remove();
+      selected_files.delete(file_id);
+      UpdateFileCount();
     }
   }
 
-  function formatFileSize(bytes) {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  }
-
-  function updateFileProgress(fileId, progress) {
-    const fileData = selectedFiles.get(fileId);
-    if (fileData && fileData.name) {
+  function UpdateFileProgress(file_id, progress) {
+    const file_data = selected_files.get(file_id);
+    if (file_data) {
+      const file_column = file_data.element.querySelector('.column-no-gap');
+      
       if (progress === 0) {
-        fileData.name.textContent = fileData.file.name;
+        file_column.innerHTML = '';
+        file_data.status_text.textContent = 'Ready';
+        file_column.appendChild(file_data.status_text);
+        file_column.appendChild(file_data.name);
       } else if (progress < 100) {
-        fileData.name.textContent = `Processing: ${progress}%`;
+        file_column.innerHTML = '';
+        file_data.status_text.textContent = `Processing: ${progress}%`;
+        file_column.appendChild(file_data.status_text);
+        file_column.appendChild(file_data.name);
       } else {
-        fileData.name.textContent = 'Complete';
+        file_column.innerHTML = '';
+        file_data.status_text.textContent = 'Complete';
+        file_column.appendChild(file_data.status_text);
+        file_column.appendChild(file_data.name);
       }
     }
   }
 
   add_btn.onclick = async () => {
     const location_txt = loc_input.value.trim();
-    const files = Array.from(selectedFiles.values()).map(f => f.file);
+    const files = Array.from(selected_files.values()).map(f => f.file);
     
     if (!location_txt) { 
       alert("Enter Location"); 
@@ -162,9 +186,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return; 
     }
 
-    // Disable the button during upload
     add_btn.disabled = true;
-    add_btn.textContent = 'Uploading...';
+    add_btn.textContent = 'Uploading';
 
     const today_iso = new Date().toISOString().split("T")[0];
     const { data:grp, error:grp_err } = await supa
@@ -174,7 +197,6 @@ document.addEventListener("DOMContentLoaded", () => {
       .single();
 
     if (grp_err || !grp?.id) {
-      console.error("group insert", grp_err);
       alert("Cannot Create Group");
       add_btn.disabled = false;
       add_btn.textContent = 'Add Files';
@@ -182,32 +204,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     const group_id = grp.id;
-    console.log("Group Created:", group_id);
 
     const delay = ms => new Promise(res => setTimeout(res, ms));
-    let uploadedCount = 0;
+    let uploaded_count = 0;
 
-    for (const [fileId, fileData] of selectedFiles) {
-      const file = fileData.file;
+    for (const [file_id, file_data] of selected_files) {
+      const file = file_data.file;
       
       try {
-        updateFileProgress(fileId, 10);
+        UpdateFileProgress(file_id, 10);
         
         let file_to_upload = file;
         let file_name = file.name;
         
         if (file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic')) {
-          console.log("Converting HEIC:", file.name);
-          updateFileProgress(fileId, 20);
+          UpdateFileProgress(file_id, 20);
           try {
             const converted_file = await ConvertHeicToJpgFile(file);
             file_to_upload = converted_file;
             file_name = converted_file.name;
-            console.log("HEIC Converted:", file_name);
-            updateFileProgress(fileId, 30);
+            UpdateFileProgress(file_id, 30);
           } catch (conversion_err) {
-            console.error("Converting HEIC Failed:", conversion_err);
-            console.log("Uploading HEIC");
           }
         }
 
@@ -215,8 +232,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const key = `${group_id}-${Date.now()}-${clean_name}`;
         const content_type = file_to_upload.type;
 
-        console.log("Uploading File:", key);
-        updateFileProgress(fileId, 40);
+        UpdateFileProgress(file_id, 40);
 
         const { error:up_err } = await supa
           .storage
@@ -224,14 +240,11 @@ document.addEventListener("DOMContentLoaded", () => {
           .upload(key, file_to_upload, { contentType: content_type, upsert: false });
 
         if (up_err) { 
-          console.error("Upload Failed:", up_err, file_name); 
-          updateFileProgress(fileId, 0);
+          UpdateFileProgress(file_id, 0);
           continue; 
         }
-        console.log("File Uploaded:", key);
-        updateFileProgress(fileId, 70);
+        UpdateFileProgress(file_id, 70);
 
-        console.log("Storage Waiting Period...");
         await delay(2000);
 
         let public_url = null;
@@ -244,24 +257,19 @@ document.addEventListener("DOMContentLoaded", () => {
             
             if (data?.publicUrl) {
               public_url = data.publicUrl;
-              console.log("Public URL Generated:", public_url);
             } else {
-              console.warn("Public URL Failed. Retrying...", key, url_err);
               await delay(1000);
             }
           } catch (url_err) {
-            console.warn("URL Generation Failed. Retrying...", key, url_err);
             await delay(1000);
           }
         }
         
         if (!public_url) { 
-          console.error("Public URL Generation Failed...", key); 
           public_url = `${SUPABASE_URL}/storage/v1/object/public/gallery/${key}`;
-          console.log("Fallback URL:", public_url);
         }
 
-        updateFileProgress(fileId, 90);
+        UpdateFileProgress(file_id, 90);
 
         const f_type = file_to_upload.type.startsWith("video") ? "video" : "image";
         const file_data = { 
@@ -270,8 +278,6 @@ document.addEventListener("DOMContentLoaded", () => {
           group: group_id 
         };
         
-        console.log("Inserting File Record:", file_data);
-        
         const { data:file_insert, error:file_err } = await supa
           .from("file")
           .insert([file_data])
@@ -279,29 +285,23 @@ document.addEventListener("DOMContentLoaded", () => {
           .single();
 
         if (file_err) {
-          console.error("File Insert Failed:", file_err);
-          console.error("File Data Failed:", file_data);
         } else {
-          console.log("File Row Created:", file_insert?.id);
-          updateFileProgress(fileId, 100);
-          uploadedCount++;
+          UpdateFileProgress(file_id, 100);
+          uploaded_count++;
         }
         
       } catch (err) {
-        console.error("Cannot Process File", file.name, err);
-        updateFileProgress(fileId, 0);
+        UpdateFileProgress(file_id, 0);
       }
     }
 
-    // Clear everything after upload
     loc_input.value = "";
-    selectedFiles.clear();
+    selected_files.clear();
     file_preview_list.innerHTML = "";
     
     add_btn.disabled = false;
     add_btn.textContent = 'Add Files';
     
-    // Navigate to gallery page
     location.hash = 'gallery';
     FetchGalleryFiles();
   };
@@ -310,22 +310,14 @@ document.addEventListener("DOMContentLoaded", () => {
   FetchTodayNote();
   FetchHistoryNotes();
   FetchGalleryFiles();
-  initTodayScroll();
-  setupScrollToTop();
 });
 
 function InitTabs() {
   const tabs = document.querySelectorAll(".tab");
   const pages = document.querySelectorAll(".page");
-  const footer = document.querySelector(".footer");
   const bar = document.querySelector(".tab-bar");
-  const todayFloatingHeader = document.getElementById('today-floating-header');
-  const galleryFloatingHeader = document.getElementById('gallery-floating-header');
-  const historyFloatingHeader = document.getElementById('history-floating-header');
 
   const Show = id => {
-    document.body.classList.toggle('body-padded-for-fab', id === 'gallery' || id === 'history' || id === 'today');
-    
     pages.forEach(p => (p.style.display = p.id === id ? "flex" : "none"));
     tabs.forEach(t => {
       const on = t.dataset.target === id;
@@ -333,15 +325,12 @@ function InitTabs() {
       t.classList.toggle("inactive", !on);
     });
 
-    if (todayFloatingHeader) todayFloatingHeader.style.display = (id === 'today') ? 'block' : 'none';
-    if (galleryFloatingHeader) galleryFloatingHeader.style.display = (id === 'gallery') ? 'block' : 'none';
-    if (historyFloatingHeader) historyFloatingHeader.style.display = (id === 'history') ? 'block' : 'none';
-
-    const hide = id === "new";
-    footer.style.display = hide ? "none" : "block";
-    bar.style.display    = hide ? "none" : "flex";
+    const add_btn = document.getElementById('new-add-btn');
+    if (add_btn) add_btn.style.display = (id === 'new') ? 'block' : 'none';
     
-    // Scroll to top when switching pages
+    const hide = id === "new";
+    bar.style.display = hide ? "none" : "flex";
+    
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -364,41 +353,12 @@ async function FetchTodayNote() {
 
   if (error || !data?.length) { SetNote("-", "No New Notes", "", ""); return; }
   const n = data[0];
-  const formattedDate = new Date(n.date).toLocaleDateString("en-ZA", { weekday:"long", day:"numeric", month:"long", year:"numeric" });
-  SetNote(n.number, formattedDate, n.header, n.body);
-  
-  // Start countdown timer
-  startCountdown();
-}
-
-function startCountdown() {
-  // Target date: July 20, 2025 at 10:00 AM SAST
-  const targetDate = new Date('2025-07-20T10:00:00+02:00'); // SAST is UTC+2
-  
-  function updateCountdown() {
-    const now = new Date();
-    const timeLeft = targetDate - now;
-    
-    if (timeLeft <= 0) {
-      document.getElementById('countdown-timer').textContent = "0d 0h 0m 0s";
-      return;
-    }
-    
-    const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-    
-    const countdownText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-    document.getElementById('countdown-timer').textContent = countdownText;
-  }
-  
-  updateCountdown();
-  setInterval(updateCountdown, 1000);
+  const formatted_date = new Date(n.date).toLocaleDateString("en-ZA", { weekday:"long", day:"numeric", month:"long", year:"numeric" });
+  SetNote(n.number, formatted_date, n.header, n.body);
 }
 
 async function FetchHistoryNotes() {
-  const box = document.querySelector("#history-container");
+  const page = document.querySelector("#history");
   const today = new Date().toISOString().split("T")[0];
 
   const { data, error } = await supa
@@ -409,93 +369,75 @@ async function FetchHistoryNotes() {
     .order("number", { ascending: false });
 
   if (error || !data?.length) return;
-  box.innerHTML = "";
+  page.innerHTML = "";
+
+  const fragment = document.createDocumentFragment();
 
   data.forEach((n, i) => {
-    const noteKey = `note-${n.date}-${n.number}`;
-    const headerHTML = `
-        <div class="column-gap-8" ${i === 0 ? 'style="display: none;"' : ''}>
-          <div class="row">
-            <div class="chip-small">${n.number}</div>
-            <div class="dot"></div>
-                <p class="medium-secondary">${format_cached(n.date)}</p>
-          </div>
+    const formatted_date = FormatCached(n.date);
+
+    const note_container = document.createElement('div');
+    note_container.className = 'column-gap-16';
+    
+    note_container.innerHTML = `
+        <div class="column-gap-8">
+            <div class="row">
+                <div class="chip-small">${n.number}</div>
+                <div class="dot"></div>
+                <p class="medium-secondary">${formatted_date}</p>
+            </div>
             <h2>${n.header}</h2>
         </div>
-    `;
-
-    const noteHTML = `
-      <div class="column-gap-16 ${i === 0 ? 'first-item-no-gap' : ''}" data-note-key="${noteKey}">
-        ${headerHTML}
-        <div class="note-content" data-note-content>
         <p style="white-space: pre-wrap;">${n.body}</p>
-      </div>
-      </div>
     `;
-    box.insertAdjacentHTML("beforeend", noteHTML);
+    fragment.appendChild(note_container);
 
     if (i !== data.length - 1) {
-      box.insertAdjacentHTML("beforeend", `
-        <div class="row-center note-separator">
-            <div class="dot"></div>
-            <div class="dot"></div>
-            <div class="dot"></div>
-      </div>
-    `);
+      const separator = document.createElement("div");
+      separator.className = "row-center";
+      separator.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+      fragment.appendChild(separator);
     }
   });
 
-  // Set initial header content from the very first note
-  const firstNote = box.querySelector('.column-gap-16[data-note-key]');
-  if(firstNote) {
-    const headerContent = document.querySelector('#history-floating-header .column-gap-8');
-    const firstNoteHeader = firstNote.querySelector('.column-gap-8').innerHTML;
-    headerContent.innerHTML = firstNoteHeader;
-  }
-
-  initHistoryScroll();
+  page.appendChild(fragment);
 }
 
 async function FetchGalleryFiles() {
   const page = document.querySelector("#gallery");
-  page.innerHTML = ""; // Clear previous content
+  page.innerHTML = "";
 
-  // Fetch all files with group information
   const { data, error } = await supa
     .from("file")
     .select("id,path,type,gallery_group:group(id,date,location)")
-    .order("id", { ascending: false }); // Sort files by ID (newest first)
+    .order("id", { ascending: false });
 
   if (error || !data?.length) { 
-    console.error("file fetch", error); 
     return; 
   }
 
-  // Group items by date and location
-  const grouped = {};
+  const groups = [];
+  const group_map = new Map();
   data.forEach(f => {
-    const key = `${f.gallery_group.date}||${f.gallery_group.location}`;
-    (grouped[key] ||= []).push(f);
-  });
-
-  // Sort groups by date (newest to oldest)
-  const groups = Object.entries(grouped).sort((a, b) => {
-    const dateA = new Date(a[0].split('||')[0]);
-    const dateB = new Date(b[0].split('||')[0]);
-    return dateB - dateA; // Newest first
+    if (f.gallery_group) {
+      const group_id = f.gallery_group.id;
+      if (!group_map.has(group_id)) {
+        const new_group = [];
+        group_map.set(group_id, new_group);
+        groups.push(new_group);
+      }
+      group_map.get(group_id).push(f);
+    }
   });
 
   const fragment = document.createDocumentFragment();
-  const lazy_blocks = [];
-
-  // This is your original, correct function for creating image frames.
-  const create_file_frame = (file_data) => {
+  
+  const CreateFileFrame = (file_data) => {
     const frame = document.createElement("div");
     frame.className = "block";
     
     if (file_data.type === "image") {
       frame.dataset.src = `${file_data.path}?quality=70`;
-      lazy_blocks.push(frame);
     } else {
       frame.innerHTML = '<div class="chip-large">View Video</div>';
     }
@@ -504,44 +446,47 @@ async function FetchGalleryFiles() {
     return frame;
   };
 
-  // This is your original, correct function for generating the two-column layout.
-  const generate_files_html = (files) => {
-    const itemsHTML = files.map((file, i) =>
+  const GenerateFilesHtml = (files) => {
+    const items_html = files.map((file, i) =>
         `<div class="gallery-item-wrapper">
             <div class="file-frame-placeholder" data-index="${i}"></div>
         </div>`
     ).join('');
-    return `<div class="gallery-grid-container">${itemsHTML}</div>`;
+    return `<div class="gallery-grid-container">${items_html}</div>`;
   };
 
-  const batch_create_elements = () => {
-    groups.forEach(([key, files], idx) => {
-      const [date, loc] = key.split("||");
-      const file_paths = files.map(f => `"${f.path}"`).join(",");
+  groups.forEach((files, idx) => {
+      const group_data = files[0].gallery_group;
+      const date = group_data.date;
+      const loc = group_data.location;
+      
+      const photo_count = files.filter(f => f.type === 'image').length;
+      const video_count = files.filter(f => f.type === 'video').length;
+      let count_text = [];
+      if (photo_count > 0) count_text.push(`${photo_count} Photo${photo_count > 1 ? 's' : ''}`);
+      if (video_count > 0) count_text.push(`${video_count} Video${video_count > 1 ? 's' : ''}`);
 
       const wrap = document.createElement("div");
-      wrap.className = `column-gap-16 ${idx === 0 ? 'first-item-no-gap' : ''}`;
-      wrap.dataset.groupKey = key;
+      wrap.className = 'column-gap-16';
       
-      // The header for each group. It's hidden for the first group only.
-      const headerHTML = `
-        <div class="column-gap-8" ${idx === 0 ? 'style="display: none;"' : ''}>
-        <div class="row">
-          <div class="chip-small">${files[0]?.gallery_group.id ?? ""}</div>
-          <div class="dot"></div>
-              <p class="medium-secondary">${format_cached(date)}</p>
+      const header_html = `
+        <div class="column-gap-8">
+            <div class="row">
+                <div class="chip-small">${group_data.id}</div>
+                <div class="dot"></div>
+                <p class="medium-secondary">${FormatCached(date)}</p>
             </div>
             <div class="row-space-between">
-                <h2>${loc}</h2>
-                <div class="chip-large" style="cursor:pointer" onclick="BatchDownloadZip([${file_paths}], '${loc}')">Save All</div>
+                <h2 style="flex: 1; min-width: 0; margin-right: 12px;">${loc}</h2>
+                <div class="chip-large" style="flex-shrink: 0;">${count_text.join(', ')}</div>
             </div>
         </div>
       `;
 
       wrap.innerHTML = `
-        ${headerHTML}
-        <div class="column-gap-16 files-container" data-files-container>
-          ${generate_files_html(files)}
+        ${header_html}
+        <div class="files-container" data-files-container>
+          ${GenerateFilesHtml(files)}
         </div>
       `;
 
@@ -549,7 +494,10 @@ async function FetchGalleryFiles() {
       frame_placeholders.forEach((placeholder) => {
         const file_data = files[parseInt(placeholder.dataset.index)];
         if (file_data) {
-          placeholder.replaceWith(create_file_frame(file_data));
+          const frame = CreateFileFrame(file_data);
+          if (frame.dataset.src) {
+          }
+          placeholder.replaceWith(frame);
         }
       });
 
@@ -562,16 +510,10 @@ async function FetchGalleryFiles() {
         fragment.appendChild(separator);
       }
     });
-  };
 
-  batch_create_elements();
+  page.appendChild(fragment);
   
-  const contentWrapper = document.createElement('div');
-  contentWrapper.className = 'content-wrapper';
-  contentWrapper.appendChild(fragment);
-
-  page.appendChild(contentWrapper);
-
+  const lazy_blocks = page.querySelectorAll('[data-src]');
   if (!gallery_observer) {
     gallery_observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
@@ -581,7 +523,7 @@ async function FetchGalleryFiles() {
             const src = el.dataset.src;
             el.removeAttribute('data-src');
             
-            preload_image(src).then(() => {
+            PreloadImage(src).then(() => {
               el.style.backgroundImage = `url("${src}")`;
             }).catch(() => {
               el.style.backgroundImage = `url("${src}")`;
@@ -596,106 +538,26 @@ async function FetchGalleryFiles() {
       threshold: 0.1
     });
   }
-
-  lazy_blocks.forEach(el => gallery_observer.observe(el));
-
-  // Set initial header content from the very first group
-  const firstGroup = page.querySelector('.column-gap-16[data-group-key]');
-  if(firstGroup) {
-    const headerContent = document.querySelector('#gallery-floating-header .column-gap-8');
-    const firstGroupHeader = firstGroup.querySelector('.column-gap-8').innerHTML;
-    headerContent.innerHTML = firstGroupHeader;
-  }
-
-  initGalleryScroll();
-}
-
-async function DownloadFile(url) {
-  const file_name = url.split("/").pop().split("?")[0];
-  try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    const blob = await response.blob();
-    const mime_type = response.headers.get('content-type') || 'application/octet-stream';
-    const file_blob = new Blob([blob], { type: mime_type });
-    const blob_url = URL.createObjectURL(file_blob);
-  const a = document.createElement("a");
-  a.href = blob_url;
-  a.download = file_name;
-    a.style.display = 'none';
-    document.body.appendChild(a);
-  a.click();
-    document.body.removeChild(a);
-  URL.revokeObjectURL(blob_url);
-  } catch (error) {
-    console.error('Download failed:', error);
-  }
-}
-
-function BatchDownload(arr) { 
-  arr.forEach((url, index) => {
-    setTimeout(() => DownloadFile(url), index * 300);
-  }); 
-}
-
-async function BatchDownloadZip(urls, location) {
-  try {
-    // Import JSZip dynamically
-    const JSZip = await import('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js');
-    const zip = new JSZip.default();
+  
+  lazy_blocks.forEach(el => {
+    gallery_observer.observe(el);
     
-    // Download all files and add them to zip with numbered names
-    const downloadPromises = urls.map(async (url, index) => {
-      try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const blob = await response.blob();
-        
-        // Get file extension from original URL
-        const originalName = url.split("/").pop().split("?")[0];
-        const extension = originalName.includes('.') ? originalName.split('.').pop() : 'jpg';
-        
-        // Add to zip with numbered filename
-        const numberedName = `${index + 1}.${extension}`;
-        zip.file(numberedName, blob);
-        
-        return { success: true, index };
-      } catch (error) {
-        console.error(`Failed to download file ${index + 1}:`, error);
-        return { success: false, index, error };
-      }
-    });
+    const rect = el.getBoundingClientRect();
+    const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
     
-    // Wait for all downloads to complete
-    const results = await Promise.all(downloadPromises);
-    const successfulDownloads = results.filter(r => r.success);
-    
-    if (successfulDownloads.length === 0) {
-      alert('Failed to download any files');
-      return;
+    if (isVisible && el.dataset.src) {
+      const src = el.dataset.src;
+      el.removeAttribute('data-src');
+      
+      PreloadImage(src).then(() => {
+        el.style.backgroundImage = `url("${src}")`;
+      }).catch(() => {
+        el.style.backgroundImage = `url("${src}")`;
+      });
+      
+      gallery_observer.unobserve(el);
     }
-    
-    // Generate zip file
-    const zipBlob = await zip.generateAsync({ type: 'blob' });
-    
-    // Create download link
-    const zipName = `${location.replace(/[^a-zA-Z0-9]/g, '_')}.zip`;
-    const blobUrl = URL.createObjectURL(zipBlob);
-    const a = document.createElement('a');
-    a.href = blobUrl;
-    a.download = zipName;
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(blobUrl);
-    
-    console.log(`Successfully downloaded ${successfulDownloads.length} files as ${zipName}`);
-    
-  } catch (error) {
-    console.error('Zip creation failed:', error);
-    alert('Failed to create zip file. Please try again.');
-  }
+  });
 }
 
 function SetNote(n,d,h,b){
@@ -704,172 +566,6 @@ function SetNote(n,d,h,b){
   document.getElementById("note-header").textContent = h;
   const note_body = document.getElementById("note-body");
   note_body.innerHTML = b.replace(/\n/g, "<br>");
-}
-
-function Format(s){
-  return format_cached(s);
-}
-
-function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function adjustPagePadding(pageId) {
-    const page = document.getElementById(pageId);
-    const header = document.getElementById(`${pageId}-floating-header`);
-    if (header) {
-        const headerHeight = header.offsetHeight;
-        if (pageId === 'today') {
-            page.style.paddingTop = `${headerHeight + 16}px`;
-        }
-    }
-}
-
-function createAdvancedScrollHandler(options) {
-    let currentActiveKey = null;
-    let lastScrollY = window.scrollY;
-
-    return () => {
-        const header = document.getElementById(options.headerId);
-        if (!header) return;
-
-        const headerHeight = header.offsetHeight;
-
-        // Border visibility: appears instantly on any scroll
-        header.classList.toggle('scrolled', window.scrollY > 10);
-
-        const fab = document.getElementById('scroll-to-top');
-        if (fab) fab.classList.toggle('visible', window.scrollY > 200);
-
-        const items = document.querySelectorAll(options.itemSelector);
-        if (items.length === 0) return;
-
-        const scrollingDown = window.scrollY > lastScrollY;
-        let activeItem = null;
-
-        if (scrollingDown) {
-            for (const item of items) {
-                const triggerEl = item.querySelector(options.downTriggerSelector);
-                if (triggerEl && triggerEl.getBoundingClientRect().bottom < headerHeight) {
-                    activeItem = item;
-    }
-            }
-        } else { // Scrolling Up
-            for (let i = items.length - 1; i >= 0; i--) {
-                const item = items[i];
-                const triggerEl = item.querySelector(options.upTriggerSelector);
-                if (triggerEl && triggerEl.getBoundingClientRect().top < headerHeight) {
-                    activeItem = item;
-                    break;
-                }
-            }
-        }
-
-        if (!activeItem) activeItem = items[0];
-        
-        const activeKey = activeItem.dataset[options.keyAttribute];
-        if (activeKey !== currentActiveKey) {
-            currentActiveKey = activeKey;
-            const header_content = header.querySelector('.column-gap-8');
-            const newHeaderHTML = activeItem.querySelector('.column-gap-8').innerHTML;
-            if (header_content && newHeaderHTML) {
-                header_content.innerHTML = newHeaderHTML;
-            }
-        }
-        lastScrollY = window.scrollY;
-    };
-}
-
-let todayScrollHandler = null;
-function initTodayScroll() {
-    if (todayScrollHandler) window.removeEventListener('scroll', todayScrollHandler);
-    let showingNoteInfo = false;
-    
-    todayScrollHandler = () => {
-        const header = document.getElementById('today-floating-header');
-        if (!header) return;
-
-        const noteHeader = document.getElementById('note-header');
-        const noteDate = document.getElementById('note-date');
-        const noteNumber = document.getElementById('note-number');
-        
-        if (!noteHeader || !noteDate || !noteNumber) return;
-
-        const currentScrollY = window.scrollY;
-        const noteHeaderRect = noteHeader.getBoundingClientRect();
-        const headerHeight = header.offsetHeight;
-
-        // Border visibility: appears instantly on any scroll
-        header.classList.toggle('scrolled', currentScrollY > 10);
-
-        // Show FAB when title is in the header (when we've scrolled past the h1)
-        const fab = document.getElementById('scroll-to-top');
-        if (fab) {
-            const shouldShowFab = noteHeaderRect.top < headerHeight;
-            fab.classList.toggle('visible', shouldShowFab);
-        }
-
-        // Show note info when we've scrolled past the h1 (when h1 top is above the header)
-        const shouldShowNoteInfo = noteHeaderRect.top < headerHeight;
-
-        // Only update if state actually needs to change
-        if (shouldShowNoteInfo !== showingNoteInfo) {
-            showingNoteInfo = shouldShowNoteInfo;
-            
-            const headerNumberElement = header.querySelector('#floating-note-number');
-            const headerDateElement = header.querySelector('#floating-note-date');
-            const headerTitleElement = header.querySelector('#countdown-timer');
-            
-            if (headerNumberElement && headerDateElement && headerTitleElement) {
-                if (showingNoteInfo) {
-                    // Show note information
-                    headerNumberElement.textContent = noteNumber.textContent;
-                    headerDateElement.textContent = noteDate.textContent;
-                    headerTitleElement.textContent = noteHeader.textContent;
-            } else {
-                    // Show countdown timer
-                    headerNumberElement.textContent = "0";
-                    headerDateElement.textContent = "I'm Arriving Back In";
-                    // The countdown timer will be updated by the startCountdown function
-                }
-            }
-        }
-    };
-    window.addEventListener('scroll', todayScrollHandler, { passive: true });
-    todayScrollHandler(); // Initial call
-}
-
-let historyScrollHandler = null;
-function initHistoryScroll() {
-    if (historyScrollHandler) window.removeEventListener('scroll', historyScrollHandler);
-    historyScrollHandler = createAdvancedScrollHandler({
-        headerId: 'history-floating-header',
-        itemSelector: '#history-container .column-gap-16[data-note-key]',
-        keyAttribute: 'noteKey',
-        downTriggerSelector: 'h2',
-        upTriggerSelector: '.row'
-    });
-    window.addEventListener('scroll', historyScrollHandler, { passive: true });
-}
-
-let galleryScrollHandler = null;
-function initGalleryScroll() {
-    if (galleryScrollHandler) window.removeEventListener('scroll', galleryScrollHandler);
-    galleryScrollHandler = createAdvancedScrollHandler({
-        headerId: 'gallery-floating-header',
-        itemSelector: '#gallery .column-gap-16[data-group-key]',
-        keyAttribute: 'groupKey',
-        downTriggerSelector: 'h2',
-        upTriggerSelector: '.row'
-    });
-    window.addEventListener('scroll', galleryScrollHandler, { passive: true });
-      }
-
-function setupScrollToTop() {
-  const fab = document.getElementById('scroll-to-top');
-  if (fab) {
-    fab.onclick = scrollToTop;
-  }
 }
 
 async function ConvertHeicToJpgFile(heic_file) {
