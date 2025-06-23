@@ -10,6 +10,11 @@ body {
     font-family: "Manrope";
     margin: 0;
     padding-bottom: 88.5px;
+    transition: padding-bottom 0.3s ease;
+}
+
+.body-padded-for-countdown {
+    padding-bottom: 164px;
 }
 
 .page {
@@ -116,10 +121,10 @@ button {
 
 .new-file {
     width: 100%;
-    height: 192px;
-    border: 1px solid rgba(197, 197, 197, 0.25);
-    border-radius: 24px;
-    background-color: rgba(197, 197, 197, 0.05);
+    height: 56px;
+    border: none;
+    border-radius: 28px;
+    background-color: rgba(197, 197, 197, 0.16);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -131,11 +136,11 @@ button {
     font-size: 14px;
     font-weight: 600;
     line-height: 24px;
-    color: rgba(0, 0, 0, 0.5);
+    color: rgba(0, 0, 0, 1);
 }
 
 .new-file:hover {
-    background-color: rgba(197, 197, 197, 0.08);
+    background-color: rgba(197, 197, 197, 0.24);
 }
 
 .file-input {
@@ -160,7 +165,7 @@ button {
 .row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
 }
 
 .row-center {
@@ -193,10 +198,6 @@ button {
     align-items: center;
     justify-content: center;
     border: 1px solid rgba(197,197,197,.24);
-}
-
-.block:hover {
-    transform: scale(1.02);
 }
 
 .block.video::after {
@@ -318,11 +319,13 @@ h3 {
     background: none;
     appearance: none;
     height: 56px;
+    border-radius: 0;
 }
 
 #new-location:focus {
     outline: none;
     border-bottom-color: rgba(197, 197, 197, 0.48);
+    border-radius: 0;
 }
 
 #new-add-btn {
@@ -349,7 +352,7 @@ h3 {
 .file-preview-item {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
     padding: 0;
     border: none;
     border-radius: 0;
@@ -365,6 +368,8 @@ h3 {
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 56px;
+    height: 56px;
 }
 
 .file-preview-info {
@@ -398,5 +403,139 @@ h3 {
 
 .file-preview-remove:hover {
     background: rgba(197, 197, 197, 0.24);
+}
+
+#countdown-container {
+    position: fixed;
+    bottom: 96px; 
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0px;
+    align-items: center;
+    pointer-events: auto;
+    background: white;
+    padding: 8px 24px;
+    border: 1px solid rgba(197, 197, 197, 0.12);
+    border-radius: 40px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.12);
+    z-index: 11;
+}
+
+#countdown-container p#countdown-text {
+    font-size: 14px;
+    line-height: 24px;
+    font-weight: 600;
+    margin: 0;
+    color: rgba(0, 0, 0, 0.5);
+}
+
+#countdown-container p.medium-secondary {
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.5);
+    margin: 0;
+}
+
+#countdown-container h2 {
+    font-size: 18px;
+    line-height: 28px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.countdown-item {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+}
+
+#countdown-container .countdown-item p {
+    font-size: 12px;
+    line-height: 16px;
+    margin: 0;
+}
+
+.music-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.music-player {
+    display: flex;
+    flex-grow: 1;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.music-album-art {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    background-color: rgba(197, 197, 197, 0.16);
+    flex-shrink: 0;
+}
+
+.music-info {
+    flex-grow: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.music-info .title {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.music-info .artist {
+    color: rgba(0, 0, 0, 0.5);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+}
+
+.music-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.music-time {
+    font-size: 14px;
+    line-height: 24px;
+    font-weight: 400;
+    color: rgba(0, 0, 0, 0.5);
+}
+
+.music-controls button {
+    background-color: rgba(197, 197, 197, 0.16);
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.music-controls button:hover {
+    background-color: rgba(197, 197, 197, 0.24);
 }
 

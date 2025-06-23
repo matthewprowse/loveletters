@@ -23,6 +23,22 @@
             </div>
             <p id="note-body">Fetching Body</p>
         </div>
+        
+        <div class="music-container">
+            <div class="music-album-art"></div>
+            <div class="music-info">
+                <p class="title">Song Title Goes Here</p>
+                <p class="artist">Artist Name</p>
+            </div>
+            <div class="music-controls">
+                <span class="music-time">3:15</span>
+                <button>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 5V19L19 12L8 5Z" fill="black"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
     </div>
 
     <div class="page" id="history">
@@ -63,6 +79,10 @@
 
         <div id="file-preview-list" class="file-preview-list">
         </div>
+    </div>
+
+    <div id="countdown-container" style="display: none;">
+        <p id="countdown-text">Calculating</p>
     </div>
 
     <button id="new-add-btn">Add Files</button>

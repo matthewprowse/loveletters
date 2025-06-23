@@ -74,13 +74,13 @@ document.addEventListener("DOMContentLoaded", () => {
     
     if (file.type.startsWith('image/')) {
       const img = document.createElement('img');
-      img.style.width = '48px';
-      img.style.height = '48px';
+      img.style.width = '56px';
+      img.style.height = '56px';
       img.style.borderRadius = '12px';
       img.style.objectFit = 'cover';
       
       img.onerror = () => {
-        thumbnail.innerHTML = '<div style="width: 48px; height: 48px; background: rgba(197, 197, 197, 0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-family: Manrope; font-size: 12px; font-weight: 600; line-height: 16px; color: black;">Photo</div>';
+        thumbnail.innerHTML = '<div style="width: 56px; height: 56px; background: rgba(197, 197, 197, 0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-family: Manrope; font-size: 12px; font-weight: 600; line-height: 16px; color: black;">Photo</div>';
       };
       
       const reader = new FileReader();
@@ -88,13 +88,13 @@ document.addEventListener("DOMContentLoaded", () => {
         img.src = e.target.result;
       };
       reader.onerror = () => {
-        thumbnail.innerHTML = '<div style="width: 48px; height: 48px; background: rgba(197, 197, 197, 0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-family: Manrope; font-size: 12px; font-weight: 600; line-height: 16px; color: black;">Photo</div>';
+        thumbnail.innerHTML = '<div style="width: 56px; height: 56px; background: rgba(197, 197, 197, 0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-family: Manrope; font-size: 12px; font-weight: 600; line-height: 16px; color: black;">Photo</div>';
       };
       reader.readAsDataURL(file);
       
       thumbnail.appendChild(img);
     } else {
-      thumbnail.innerHTML = '<div style="width: 48px; height: 48px; background: rgba(197, 197, 197, 0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-family: Manrope; font-size: 12px; font-weight: 600; line-height: 16px; color: black;">Video</div>';
+      thumbnail.innerHTML = '<div style="width: 56px; height: 56px; background: rgba(197, 197, 197, 0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-family: Manrope; font-size: 12px; font-weight: 600; line-height: 16px; color: black;">Video</div>';
     }
     
     const info = document.createElement('div');
@@ -114,17 +114,13 @@ document.addEventListener("DOMContentLoaded", () => {
     status_text.style.fontFamily = 'Manrope';
     status_text.textContent = 'Ready';
     
-    const file_column = document.createElement('div');
-    file_column.className = 'column-no-gap';
-    file_column.appendChild(status_text);
-    file_column.appendChild(name);
+    info.appendChild(status_text);
+    info.appendChild(name);
     
     const remove_btn = document.createElement('button');
     remove_btn.className = 'chip-large file-preview-remove';
     remove_btn.textContent = 'Remove';
     remove_btn.onclick = () => RemoveFile(file_id);
-    
-    info.appendChild(file_column);
     
     file_item.appendChild(thumbnail);
     file_item.appendChild(info);
@@ -152,23 +148,23 @@ document.addEventListener("DOMContentLoaded", () => {
   function UpdateFileProgress(file_id, progress) {
     const file_data = selected_files.get(file_id);
     if (file_data) {
-      const file_column = file_data.element.querySelector('.column-no-gap');
+      const info = file_data.element.querySelector('.file-preview-info');
       
       if (progress === 0) {
-        file_column.innerHTML = '';
+        info.innerHTML = '';
         file_data.status_text.textContent = 'Ready';
-        file_column.appendChild(file_data.status_text);
-        file_column.appendChild(file_data.name);
+        info.appendChild(file_data.status_text);
+        info.appendChild(file_data.name);
       } else if (progress < 100) {
-        file_column.innerHTML = '';
+        info.innerHTML = '';
         file_data.status_text.textContent = `Processing: ${progress}%`;
-        file_column.appendChild(file_data.status_text);
-        file_column.appendChild(file_data.name);
+        info.appendChild(file_data.status_text);
+        info.appendChild(file_data.name);
       } else {
-        file_column.innerHTML = '';
+        info.innerHTML = '';
         file_data.status_text.textContent = 'Complete';
-        file_column.appendChild(file_data.status_text);
-        file_column.appendChild(file_data.name);
+        info.appendChild(file_data.status_text);
+        info.appendChild(file_data.name);
       }
     }
   }
@@ -310,12 +306,51 @@ document.addEventListener("DOMContentLoaded", () => {
   FetchTodayNote();
   FetchHistoryNotes();
   FetchGalleryFiles();
+  startCountdown();
 });
+
+function startCountdown() {
+    const countdownContainer = document.getElementById('countdown-container');
+    if (!countdownContainer) return;
+
+    const countdownDate = new Date('2025-07-20T10:00:00+02:00').getTime();
+
+    const updateCountdown = () => {
+        const now = new Date().getTime();
+        const distance = countdownDate - now;
+
+        if (distance < 0) {
+            countdownContainer.innerHTML = `<p id="countdown-text">I've Arrived Back</p>`;
+            // We can stop the interval now that the countdown is finished.
+            if (window.countdownInterval) {
+                clearInterval(window.countdownInterval);
+            }
+            return;
+        }
+        
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.ceil((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+        const daysText = days === 1 ? 'Day' : 'Days';
+        const hoursText = hours === 1 ? 'Hour' : 'Hours';
+
+        countdownContainer.innerHTML = `
+            <p class="medium-secondary">I'm Arriving Back In</p>
+            <h2>${days} ${daysText}, ${hours} ${hoursText}</h2>
+        `;
+    };
+
+    setTimeout(() => {
+        updateCountdown(); 
+        window.countdownInterval = setInterval(updateCountdown, 1000); 
+    }, 500);
+}
 
 function InitTabs() {
   const tabs = document.querySelectorAll(".tab");
   const pages = document.querySelectorAll(".page");
   const bar = document.querySelector(".tab-bar");
+  const countdownContainer = document.getElementById('countdown-container');
 
   const Show = id => {
     pages.forEach(p => (p.style.display = p.id === id ? "flex" : "none"));
@@ -328,6 +363,12 @@ function InitTabs() {
     const add_btn = document.getElementById('new-add-btn');
     if (add_btn) add_btn.style.display = (id === 'new') ? 'block' : 'none';
     
+    if (countdownContainer) {
+        const isToday = id === 'today';
+        countdownContainer.style.display = isToday ? 'flex' : 'none';
+        document.body.classList.toggle('body-padded-for-countdown', isToday);
+    }
+
     const hide = id === "new";
     bar.style.display = hide ? "none" : "flex";
     
@@ -351,7 +392,11 @@ async function FetchTodayNote() {
     .order("number", { ascending: true })
     .limit(1);
 
-  if (error || !data?.length) { SetNote("-", "No New Notes", "", ""); return; }
+  if (error || !data?.length) { 
+    const today_formatted = new Date(today).toLocaleDateString("en-ZA", { weekday:"long", day:"numeric", month:"long", year:"numeric" });
+    SetNote("", today_formatted, "No Note Available", ""); 
+    return; 
+  }
   const n = data[0];
   const formatted_date = new Date(n.date).toLocaleDateString("en-ZA", { weekday:"long", day:"numeric", month:"long", year:"numeric" });
   SetNote(n.number, formatted_date, n.header, n.body);
