@@ -1,541 +1,493 @@
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;600&display=swap");
 
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
+:root {
+  --font-family: "Manrope";
+  --bg-color: rgba(197, 197, 197, 0.15);
+  --bg-hover: rgba(197, 197, 197, 0.25);
+  --text-primary: rgba(0, 0, 0, 1);
+  --text-secondary: rgba(0, 0, 0, 0.48);
+  --text-muted: rgba(0, 0, 0, 0.5);
+  --border-color: rgba(197, 197, 197, 0.25);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
 body {
-    font-family: "Manrope";
-    margin: 0;
-    padding-bottom: 88.5px;
-    transition: padding-bottom 0.3s ease;
+  font-family: var(--font-family);
+  margin: 0;
+  padding-bottom: 80px;
+  transition: padding-bottom 0.3s ease;
+  overflow-x: hidden;
 }
 
 .body-padded-for-countdown {
-    padding-bottom: 164px;
+  padding-bottom: 164px;
 }
 
 .page {
-    display: none;
-    flex-direction: column;
-    gap: 24px;
+  display: none;
+  flex-direction: column;
+  gap: 24px;
+  box-sizing: border-box;
 }
 
 .page:first-of-type {
-    display: flex;
+  display: flex;
 }
 
 .page#gallery,
 .page#history,
 .page#today {
-    padding: 16px; 
+  padding: 16px;
+  padding-bottom: 98px;
+}
+
+.page#today {
+  padding: 16px;
+  min-height: unset;
+  padding-bottom: 0;
+}
+
+.page#gallery {
+  padding: 16px;
+  padding-bottom: 96px;
+}
+
+body:not(.body-padded-for-countdown) {
+  padding-bottom: 0;
 }
 
 .tab-bar {
-    position: fixed;
-    bottom: 16px;
-    left: 16px;
-    right: 16px;
-    background: white;
-    border-style: solid;
-    border-color: rgba(197, 197, 197, 0.12);
-    display: flex;
-    border-radius: 32px;
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.12);
-    padding: 4px;
-    overflow: hidden;
-    z-index: 12;
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  height: 66px;
+  background: white;
+  border: 1px solid var(--border-color);
+  display: flex;
+  border-radius: 32px;
+  padding: 4px;
+  overflow: hidden;
+  z-index: 12;
 }
 
 .tab {
-    flex: 1;
-    background: none;
-    font-family: "Manrope";
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 24px;
-    border: none;
-    color: black;
-    padding: 16px;
-    border-radius: 28px;
-    cursor: pointer;
-    text-align: center;
+  flex: 1;
+  background: none;
+  font-family: var(--font-family);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 24px;
+  border: none;
+  color: var(--text-primary);
+  padding: 16px;
+  border-radius: 28px;
+  cursor: pointer;
+  text-align: center;
 }
 
 .tab.active {
-    background: rgba(197, 197, 197, 0.16);
+  background: var(--bg-color);
 }
 
 .tab.inactive {
-    color: rgba(0, 0, 0, 0.48);
+  color: var(--text-secondary);
 }
 
 .chip-small {
-    font-size: 12px;
-    font-weight: 600;
-    line-height: 16px;
-    color: rgba(0, 0, 0, 0.48);
-    border-radius: 16px;
-    background-color: rgba(197, 197, 197, 0.16);
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  color: var(--text-secondary);
+  border-radius: 16px;
+  background-color: var(--bg-color);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .chip-large {
-    font-size: 12px;
-    font-weight: 600;
-    line-height: 16px;
-    color: rgba(0, 0, 0, 1);
-    border-radius: 16px;
-    background-color: rgba(197, 197, 197, 0.16);
-    padding: 8px 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  color: var(--text-primary);
+  border-radius: 16px;
+  background-color: var(--bg-color);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .dot {
-    width: 4px;
-    height: 4px;
-    border-radius: 2px;
-    background-color: rgba(197, 197, 197, 0.48);
+  width: 4px;
+  height: 4px;
+  border-radius: 2px;
+  background-color: rgba(197, 197, 197, 0.48);
 }
 
 button {
-    font-family: "Manrope";
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 24px;
-    color: rgba(0, 0, 0, 1);
-    border: none;
-    border-radius: 32px;
-    padding: 16px 16px;
-    background-color: rgba(197, 197, 197, 0.16);
-    appearance: none;
+  font-family: var(--font-family);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 24px;
+  color: var(--text-primary);
+  border: none;
+  border-radius: 32px;
+  padding: 16px 16px;
+  background-color: var(--bg-color);
+  appearance: none;
 }
 
 .new-file {
-    width: 100%;
-    height: 56px;
-    border: none;
-    border-radius: 28px;
-    background-color: rgba(197, 197, 197, 0.16);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    position: relative;
-    overflow: hidden;
-    font-family: "Manrope";
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 24px;
-    color: rgba(0, 0, 0, 1);
+  width: 100%;
+  height: 56px;
+  border: none;
+  border-radius: 28px;
+  background-color: var(--bg-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  font-family: var(--font-family);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 24px;
+  color: var(--text-primary);
 }
 
 .new-file:hover {
-    background-color: rgba(197, 197, 197, 0.24);
+  background-color: var(--bg-hover);
 }
 
 .file-input {
-    display: none;
+  display: none;
 }
 
 .processing-text {
-    font-family: "Manrope";
-    font-size: 16px;
-    font-weight: 600;
-    line-height: 24px;
-    color: rgba(0, 0, 0, 1);
-    margin: 0;
+  font-family: var(--font-family);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  color: var(--text-primary);
+  margin: 0;
 }
 
 .file-preview-list {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.row-center {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.row-space-between {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
+.center { justify-content: center; }
+.space-between { justify-content: space-between; }
 
 .block {
-    border-radius: 24px;
-    overflow: hidden;
-    position: relative;
-    transform: translateZ(0);
-    background-color: rgba(197, 197, 197, 0.16);
-    flex: 1;
-    aspect-ratio: 1 / 1;
-    width: 100%;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(197,197,197,.24);
+  border-radius: 24px;
+  overflow: hidden;
+  position: relative;
+  transform: translateZ(0);
+  background-color: var(--bg-color);
+  flex: 1;
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-color);
 }
 
 .block.video::after {
-    content: "Video";
-    color: rgba(255, 255, 255, 0.64);
-    font-size: 14px;
-    line-height: 24px;
-    position: absolute;
-    inset: 0px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  content: "Video";
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 14px;
+  line-height: 24px;
+  position: absolute;
+  inset: 0px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.column-gap-8 {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+.column {
+  display: flex;
+  flex-direction: column;
 }
 
-.column-gap-16 {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.column-no-gap {
-    display: flex;
-    flex-direction: column;
-}
+.gap-0 { gap: 0; }
+.gap-8 { gap: 8px; }
+.gap-16 { gap: 16px; }
 
 p {
-    font-family: "Manrope";
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 24px;
-    color: rgba(0, 0, 0, 1);
-    margin: 0;
+  font-family: var(--font-family);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 24px;
+  color: var(--text-primary);
+  margin: 0;
 }
 
 p.medium {
-    font-weight: 600;
+  font-weight: 600;
 }
 
 p.medium-secondary {
-    font-weight: 600;
-    color: rgba(0, 0, 0, 0.48);
+  font-weight: 600;
+  color: var(--text-secondary);
 }
 
 p.small-medium-secondary {
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 20px;
-    color: rgba(0, 0, 0, 0.48);
-    margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--text-secondary);
+  margin: 0;
 }
 
 h1 {
-    font-family: "Manrope";
-    font-size: 32px;
-    font-weight: 600;
-    line-height: 40px;
-    color: rgba(0, 0, 0, 1);
-    margin: 0;
+  font-family: var(--font-family);
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 40px;
+  color: var(--text-primary);
+  margin: 0;
 }
 
 h2 {
-    font-family: "Manrope";
-    font-size: 24px;
-    font-weight: 600;
-    line-height: 32px;
-    color: rgba(0, 0, 0, 1);
-    margin: 0;
+  font-family: var(--font-family);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 32px;
+  color: var(--text-primary);
+  margin: 0;
 }
 
 h3 {
-    font-family: "Manrope";
-    font-size: 20px;
-    font-weight: 600;
-    line-height: 28px;
-    color: rgba(0, 0, 0, 1);
-    margin: 0;
+  font-family: var(--font-family);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 28px;
+  color: var(--text-primary);
+  margin: 0;
 }
 
 .gallery-grid-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
 .gallery-item-wrapper:last-child:nth-child(odd) {
-    grid-column: span 2;
+  grid-column: span 2;
 }
 
 .gallery-item-wrapper:last-child:nth-child(odd) .block {
-    border-radius: 36px;
+  border-radius: 36px;
 }
 
 #new {
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-bottom: 88px;
 }
 
 #new > h2 {
-    margin-bottom: 8px;
+  margin-bottom: 8px;
 }
 
-#new-location {
-    font-family: "Manrope";
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 24px;
-    color: rgba(0, 0, 0, 1);
-    border: none;
-    border-bottom: 1px solid rgba(197, 197, 197, 0.25);
-    padding: 16px 0;
-    background: none;
-    appearance: none;
-    height: 56px;
-    border-radius: 0;
+.input-field {
+  font-family: var(--font-family);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 24px;
+  color: var(--text-primary);
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  padding: 16px 0;
+  background: none;
+  appearance: none;
+  height: 56px;
+  border-radius: 0;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border 0.2s;
+  resize: none;
+  outline: none;
+  display: block;
 }
 
-#new-location:focus {
-    outline: none;
-    border-bottom-color: rgba(197, 197, 197, 0.48);
-    border-radius: 0;
+.input-field:focus {
+  outline: none;
+  border-bottom-color: var(--text-secondary);
+  border-radius: 0;
+}
+
+textarea.input-field {
+  min-height: 56px;
+  max-height: 192px;
+}
+
+.sticky-add-btn-container {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  width: auto;
+  background: #fff;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  box-sizing: border-box;
+  border-radius: 28px;
 }
 
 #new-add-btn {
-    position: fixed;
-    bottom: 16px;
-    left: 16px;
-    right: 16px;
-    height: 56px;
-    border-radius: 28px;
-    background: rgba(197, 197, 197, 0.16);
-    color: black;
-    font-weight: 600;
-    display: none;
-}
-
-#new-add-btn:hover {
-    background: rgba(197, 197, 197, 0.24);
-}
-
-#new-add-btn:active {
-    background: rgba(197, 197, 197, 0.32);
+  position: static;
+  width: 100%;
+  min-width: 120px;
+  height: 56px;
+  border-radius: 28px;
+  background: var(--bg-color);
+  color: var(--text-primary);
+  font-weight: 600;
+  display: block;
+  opacity: 1 !important;
+  pointer-events: auto;
+  box-shadow: none;
+  margin: 0;
 }
 
 .file-preview-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 0;
-    border: none;
-    border-radius: 0;
-    background: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
 }
 
 .file-preview-item:last-child {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 .file-preview-thumbnail {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 56px;
-    height: 56px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
 }
 
 .file-preview-info {
-    flex: 1;
-    min-width: 0;
+  flex: 1;
+  min-width: 0;
 }
 
 .file-preview-name {
-    font-family: "Manrope";
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 20px;
-    color: rgba(0, 0, 0, 1);
-    margin: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  font-family: var(--font-family);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 24px;
+  color: var(--text-primary);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .file-preview-remove {
-    flex-shrink: 0;
-    background: rgba(197, 197, 197, 0.16);
-    color: black;
-    border: none;
-    border-radius: 16px;
-    padding: 8px 16px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
+  flex-shrink: 0;
+  background: var(--bg-color);
+  color: var(--text-primary);
+  border: none;
+  border-radius: 16px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .file-preview-remove:hover {
-    background: rgba(197, 197, 197, 0.24);
+  background: var(--bg-hover);
 }
 
 #countdown-container {
-    position: fixed;
-    bottom: 96px; 
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 0px;
-    align-items: center;
-    pointer-events: auto;
-    background: white;
-    padding: 8px 24px;
-    border: 1px solid rgba(197, 197, 197, 0.12);
-    border-radius: 40px;
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.12);
-    z-index: 11;
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 90px;
+  background: white;
+  padding: 8px 24px;
+  border: 1px solid var(--border-color);
+  border-radius: 32px;
+  box-shadow: none;
+  z-index: 11;
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 #countdown-container p#countdown-text {
-    font-size: 14px;
-    line-height: 24px;
-    font-weight: 600;
-    margin: 0;
-    color: rgba(0, 0, 0, 0.5);
+  font-size: 14px;
+  line-height: 24px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-muted);
 }
 
 #countdown-container p.medium-secondary {
-    font-size: 12px;
-    line-height: 16px;
-    font-weight: 600;
-    color: rgba(0, 0, 0, 0.5);
-    margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 0;
 }
 
 #countdown-container h2 {
-    font-size: 18px;
-    line-height: 28px;
-    font-weight: 600;
-    margin: 0;
+  font-size: 18px;
+  line-height: 28px;
+  font-weight: 600;
+  margin: 2px 0 0 0;
+  white-space: nowrap;
 }
 
 .countdown-item {
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
 }
 
 #countdown-container .countdown-item p {
-    font-size: 12px;
-    line-height: 16px;
-    margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  margin: 0;
 }
-
-.music-container {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.music-player {
-    display: flex;
-    flex-grow: 1;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-}
-
-.music-album-art {
-    width: 56px;
-    height: 56px;
-    border-radius: 12px;
-    background-color: rgba(197, 197, 197, 0.16);
-    flex-shrink: 0;
-}
-
-.music-info {
-    flex-grow: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-}
-
-.music-info .title {
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.music-info .artist {
-    color: rgba(0, 0, 0, 0.5);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-size: 12px;
-    font-weight: 600;
-    line-height: 16px;
-}
-
-.music-controls {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.music-time {
-    font-size: 14px;
-    line-height: 24px;
-    font-weight: 400;
-    color: rgba(0, 0, 0, 0.5);
-}
-
-.music-controls button {
-    background-color: rgba(197, 197, 197, 0.16);
-    border: none;
-    width: 36px;
-    height: 36px;
-    border-radius: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    padding: 0;
-    flex-shrink: 0;
-}
-
-.music-controls button:hover {
-    background-color: rgba(197, 197, 197, 0.24);
-}
-

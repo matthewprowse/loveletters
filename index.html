@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>For Julia</title>
+    <title>For Julia: Loving You While I'm Away</title>
 
     <link rel="stylesheet" href="style.css">
     
@@ -12,31 +12,14 @@
 </head>
 <body>
     <div class="page" id="today">
-        <div class="column-gap-16">
-            <div class="column-gap-8">
+        <div class="column gap-16" id="today-content">
+            <div class="column gap-8">
                 <div class="row">
-                    <div class="chip-small" id="note-number">0</div>
+                    <div class="chip-small" id="note-number"></div>
                     <div class="dot"></div>
-                    <p class="medium-secondary" id="note-date">Fetching Date</p>
+                    <p class="medium-secondary" id="note-date">Loading</p>
                 </div>
-                <h2 id="note-header">Fetching Header</h2>
-            </div>
-            <p id="note-body">Fetching Body</p>
-        </div>
-        
-        <div class="music-container">
-            <div class="music-album-art"></div>
-            <div class="music-info">
-                <p class="title">Song Title Goes Here</p>
-                <p class="artist">Artist Name</p>
-            </div>
-            <div class="music-controls">
-                <span class="music-time">3:15</span>
-                <button>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M8 5V19L19 12L8 5Z" fill="black"/>
-                    </svg>
-                </button>
+                <h2 id="note-header">Loading</h2>
             </div>
         </div>
     </div>
@@ -48,16 +31,30 @@
     </div>
 
     <div class="page" id="new">
-        <div class="row-space-between">
+        <div class="row space-between">
             <h2>New Files</h2>
             <span class="chip-large" id="file-count">0 Files</span>
         </div>
 
-        <div class="column-no-gap">
+        <div class="column gap-0">
             <p class="small-medium-secondary">Location</p>
-            <input id="new-location" type="text" placeholder="Enter Location">
+            <input id="new-location" type="text" placeholder="Enter Location" class="input-field">
         </div>
-        <div class="row-center">
+        <div class="column gap-0">
+            <p class="small-medium-secondary">Location Link</p>
+            <input id="new-link" type="text" placeholder="Enter Location Link" class="input-field">
+        </div>
+        <div class="row center">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+
+        <div class="column gap-0">
+            <p class="small-medium-secondary">Description</p>
+            <textarea id="new-description" placeholder="Enter Description" class="input-field" style="resize: none; overflow: hidden; min-height: 40px;"></textarea>
+        </div>
+        <div class="row center">
             <div class="dot"></div>
             <div class="dot"></div>
             <div class="dot"></div>
@@ -69,7 +66,7 @@
                 multiple
                 accept="image/*,video/*">
         </label>
-        <div class="row-center">
+        <div class="row center">
             <div class="dot"></div>
             <div class="dot"></div>
             <div class="dot"></div>
@@ -85,7 +82,9 @@
         <p id="countdown-text">Calculating</p>
     </div>
 
-    <button id="new-add-btn">Add Files</button>
+    <div class="sticky-add-btn-container" id="sticky-add-btn-container">
+        <button id="new-add-btn">Add Files</button>
+    </div>
 
     <div class="tab-bar">
         <button class="tab active" data-target="today">Today</button>
